@@ -3820,6 +3820,24 @@ function viewer(zs) {
             html.push("</div>");
         };
 
+        /**
+         * 마지막 컬럼 너비 반환 함수
+         */
+        Viewer.prototype.getLeafColumnWidth = function () {
+            let objLeafColumnWidth = this._leafColumnWidth;
+            let objLeafColumnWidthKeys = Object.keys(objLeafColumnWidth);
+            let objItem = {};
+
+            if (objLeafColumnWidthKeys.length > 0) {
+                objLeafColumnWidthKeys.forEach(key => {
+                   if (key) {
+                       objItem[key] = objLeafColumnWidth[key];
+                   }
+                });
+            }
+            return objItem;
+        }; // func - getLeafColumnWidth
+
         return Viewer;
     }());
 
