@@ -160,6 +160,7 @@ function viewer(zs) {
                 cellWidth: 100,
                 cellHeight: 24,
                 leftAxisWidth: null,
+                columnWidth: {},  // -- #20210309-01 : 컬럼 너비 값
                 cumulativeClick: false,
                 axisSelectMode: Viewer.SELECT_MODE.ONESIDE, // ONESIDE, SINGLE, MULTI    -- #20161227-01 : X/Y축 모두 클릭되도록 기능 추가
                 useSelectStyle: true,
@@ -284,6 +285,21 @@ function viewer(zs) {
             this._yAxisGroup = {};
             this._bodyCellSelectInfo = {};
             // Add Property by eltriny - end
+
+            // 20210309 : Harry : Leaf Column Width - S
+            if (Object.keys(this._settings.columnWidth).length > 0 ) {
+                let objLeafColumnWidth = this._settings.columnWidth;
+                let objLeafColumnWidthKeys = Object.keys(objLeafColumnWidth);
+
+                if (objLeafColumnWidthKeys.length > 0) {
+                    objLeafColumnWidthKeys.forEach(key => {
+                        if (key) {
+                            this._leafColumnWidth[key] = objLeafColumnWidth[key];
+                        }
+                    });
+                }
+            }
+            // 20210309 : Harry : Leaf Column Width - E
 
             // 데이터 정리 - Start
             if (items.rows && 0 < items.rows.length) {
@@ -986,7 +1002,7 @@ function viewer(zs) {
 
                     let widthKeys = Object.keys(objViewer._leafColumnWidth);
                     let contentSizeWidth = widthKeys.reduce(function (acc, item) {
-                        return acc + objViewer._leafColumnWidth[item];
+                        return acc + Number(objViewer._leafColumnWidth[item]);
                     }, 0);
                     let currentGridWidth = objViewer._elementBody.style.width.replace(/px/gi, '') * 1 - objViewer._elementBodyFrozen.style.width.replace(/px/gi, '') * 1;
 
@@ -1009,7 +1025,7 @@ function viewer(zs) {
                         // current state is fit!!
                         let extraWidth = currentGridWidth - dragWidth;
                         let beforeExtraWidth = widthKeys.reduce((acc, val) => {
-                            return acc + ((val !== strLeafColName) ? objViewer._leafColumnWidth[val] : 0);
+                            return acc + ((val !== strLeafColName) ? Number(objViewer._leafColumnWidth[val]) : 0);
                         }, 0);
 
                         widthKeys.forEach(key => {
@@ -1352,7 +1368,7 @@ function viewer(zs) {
             // 전체 컨텐츠 너비 설정 - Start
             const widthKeys = Object.keys(this._leafColumnWidth);
             if (0 < widthKeys.length) {
-                let contentSizeWidth = widthKeys.reduce((acc, item) => acc + this._leafColumnWidth[item], 0);
+                let contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
                 // let currentGridWidth = this._elementBody.style.width.replace(/px/gi, '') * 1 - frozenWidth;
                 // if (this.IS_FILL_WIDTH && contentSizeWidth < currentGridWidth) {
                 //     let cellDiffWidth = (currentGridWidth - contentSizeWidth) / widthKeys.length;
@@ -1393,7 +1409,7 @@ function viewer(zs) {
 
                     leftPos = leftPos + (Object.keys(leafColWidth).reduce((acc, currVal) => {
                         if (currVal && -1 < currVal.indexOf(xPropLeafColName)) {
-                            acc = acc + leafColWidth[currVal];
+                            acc = acc + Number(leafColWidth[currVal]);
                         }
                         return acc;
                     }, 0));
@@ -1529,7 +1545,7 @@ function viewer(zs) {
                         return acc + item[currProp.name];
                     }, '');
                     leafColWidth[leafColumnWidthName] || (leafColWidth[leafColumnWidthName] = cellWidth);
-                    totalWidth = totalWidth + leafColWidth[leafColumnWidthName];
+                    totalWidth = totalWidth + Number(leafColWidth[leafColumnWidthName]);
                 });
                 columnStyles["width"] = Math.min(totalWidth, this._elementHead.offsetWidth - frozenWidth) + "px";
                 // 20180807 : Koo : Resize Column - E
@@ -1617,7 +1633,7 @@ function viewer(zs) {
                             .forEach(leafColName => {
                                 leftPos = leftPos + Object.keys(leafColWidth).reduce((acc, currVal) => {
                                     if (currVal && (currVal === leafColName || -1 < currVal.indexOf(leafColName + '||'))) {
-                                        acc = acc + leafColWidth[currVal];
+                                        acc = acc + Number(leafColWidth[currVal]);
                                     }
                                     return acc;
                                 }, 0);
@@ -1626,7 +1642,7 @@ function viewer(zs) {
 
                         columnStyles["width"] = Object.keys(leafColWidth).reduce((acc, currVal) => {
                             if (currVal && (currVal === currLeafColName || -1 < currVal.indexOf(currLeafColName + '||'))) {
-                                acc = acc + leafColWidth[currVal];
+                                acc = acc + Number(leafColWidth[currVal]);
                             }
                             return acc;
                         }, 0) + "px";
@@ -1982,7 +1998,7 @@ function viewer(zs) {
                             for (let idx = 0; idx < xii; idx++) {
                                 let tempItem = this._xItems[idx];
                                 let leafColName = this._settings.xProperties.map(item => tempItem[item.name]).join('||');
-                                leftPos = leftPos + leafColWidth[leafColName];
+                                leftPos = leftPos + Number(leafColWidth[leafColName]);
                             }
                             columnStyles["left"] = leftPos + "px";
 
@@ -2177,7 +2193,7 @@ function viewer(zs) {
                                     let leafColName = this._settings.xProperties.map(function (item) {
                                         return tempItem[item.name];
                                     }).join('||');
-                                    leftPos = leftPos + leafColWidth[leafColName];
+                                    leftPos = leftPos + Number(leafColWidth[leafColName]);
                                 }
                                 columnStyles["left"] = leftPos + "px";
 
@@ -2189,7 +2205,7 @@ function viewer(zs) {
                                     }
                                 });
 
-                                columnStyles["width"] = leafColWidth[leafColName] + "px";
+                                columnStyles["width"] = Number(leafColWidth[leafColName]) + "px";
                                 // 20180807 : Koo : Resize Column - E
 
                                 let summaryKey = '' === leafColName ? zpiProp.name : leafColName + '||' + zpiProp.name;
@@ -2252,7 +2268,7 @@ function viewer(zs) {
             // 전체 컨텐츠 너비 설정 - Start
             const widthKeys = Object.keys(this._leafColumnWidth);
             if (0 < widthKeys.length) {
-                let contentSizeWidth = widthKeys.reduce((acc, item) => acc + this._leafColumnWidth[item], 0);
+                let contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
                 // let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - frozenWidth;
                 // if (this.IS_FILL_WIDTH && contentSizeWidth < currentGridWidth) {
                 //     // let cellDiffWidth = (currentGridWidth - contentSizeWidth) / widthKeys.length;
@@ -2292,7 +2308,7 @@ function viewer(zs) {
 
                     leftPos = leftPos + Object.keys(leafColWidth).reduce((acc, currVal) => {
                         if (currVal && -1 < currVal.indexOf(xPropLeafColName)) {
-                            acc = acc + leafColWidth[currVal];
+                            acc = acc + Number(leafColWidth[currVal]);
                         }
                         return acc;
                     }, 0);
@@ -2400,7 +2416,7 @@ function viewer(zs) {
                     this._settings.zProperties.forEach(zProp => {
                         let name = '' !== leafColumnWidthName ? leafColumnWidthName + "||" + zProp.name : zProp.name;
                         'undefined' === typeof leafColWidth[name] && (leafColWidth[name] = cellWidth);
-                        totalWidth = totalWidth + leafColWidth[name];
+                        totalWidth = totalWidth + Number(leafColWidth[name]);
                     });
                 });
 
@@ -2510,7 +2526,7 @@ function viewer(zs) {
                             .forEach(leafColName => {
                                 leftPos = leftPos + Object.keys(leafColWidth).reduce((acc, currVal) => {
                                     if (currVal && (currVal === leafColName || -1 < currVal.indexOf(leafColName + '||'))) {
-                                        acc = acc + leafColWidth[currVal];
+                                        acc = acc + Number(leafColWidth[currVal]);
                                     }
                                     return acc;
                                 }, 0);
@@ -2519,7 +2535,7 @@ function viewer(zs) {
 
                         columnStyles["width"] = Object.keys(leafColWidth).reduce((acc, currVal) => {
                             if (currVal && (currVal === currLeafColName || -1 < currVal.indexOf(currLeafColName + '||'))) {
-                                acc = acc + leafColWidth[currVal];
+                                acc = acc + Number(leafColWidth[currVal]);
                             }
                             return acc;
                         }, 0) + "px";
@@ -2636,21 +2652,21 @@ function viewer(zs) {
                                 .forEach(leafColName => {
                                     leftPos = leftPos + Object.keys(leafColWidth).reduce((acc, currVal) => {
                                         if (currVal && -1 < currVal.indexOf(leafColName)) {
-                                            acc = acc + leafColWidth[currVal];
+                                            acc = acc + Number(leafColWidth[currVal]);
                                         }
                                         return acc;
                                     }, 0);
                                 });
                             leftPos = leftPos + this._settings.zProperties.slice(0, zpi).reduce((acc, currVal) => {
                                 let leafColName = (columnAttributes["data-parent-vals"]) ? columnAttributes["data-parent-vals"] + "||" + currVal.name : currVal.name;
-                                return acc + leafColWidth[leafColName];
+                                return acc + Number(leafColWidth[leafColName]);
                             }, 0);
                             columnStyles["left"] = leftPos + "px";
 
                             let leafColName = (columnAttributes["data-parent-vals"]) ? columnAttributes["data-parent-vals"] + "||" + zPropName : zPropName;
                             columnStyles["width"] = Object.keys(leafColWidth).reduce((acc, currVal) => {
                                 if (currVal === leafColName) {
-                                    acc = acc + leafColWidth[currVal];
+                                    acc = acc + Number(leafColWidth[currVal]);
                                 }
                                 return acc;
                             }, 0) + "px";
@@ -2948,14 +2964,14 @@ function viewer(zs) {
                                 .forEach(leafColName => {
                                     leftPos = leftPos + Object.keys(leafColWidth).reduce((acc, currVal) => {
                                         if (currVal && (currVal === leafColName || -1 < currVal.indexOf(leafColName + '||'))) {
-                                            acc = acc + leafColWidth[currVal];
+                                            acc = acc + Number(leafColWidth[currVal]);
                                         }
                                         return acc;
                                     }, 0);
                                 });
                             leftPos = leftPos + this._settings.zProperties.slice(0, zpi).reduce((acc, currVal) => {
                                 let leafColName = ('' !== xPropLeafColName) ? xPropLeafColName + "||" + currVal.name : currVal.name;
-                                return acc + leafColWidth[leafColName];
+                                return acc + Number(leafColWidth[leafColName]);
                             }, 0);
                             columnStyles["left"] = leftPos + "px";
                             if ('' === xPropLeafColName) {
@@ -3158,14 +3174,14 @@ function viewer(zs) {
                                 }, []).forEach(function (leafColName) {
                                     leftPos = leftPos + Object.keys(leafColWidth).reduce(function (acc, currVal) {
                                         if (currVal && (currVal === leafColName || -1 < currVal.indexOf(leafColName + '||'))) {
-                                            acc = acc + leafColWidth[currVal];
+                                            acc = acc + Number(leafColWidth[currVal]);
                                         }
                                         return acc;
                                     }, 0);
                                 });
                                 leftPos = leftPos + this._settings.zProperties.slice(0, zpi).reduce(function (acc, currVal) {
                                     let leafColName = '' !== xPropLeafColName ? xPropLeafColName + "||" + currVal.name : currVal.name;
-                                    return acc + leafColWidth[leafColName];
+                                    return acc + Number(leafColWidth[leafColName]);
                                 }, 0);
                                 columnStyles["left"] = leftPos + "px";
 
@@ -3669,7 +3685,7 @@ function viewer(zs) {
 
             const redraw = () => {
                 let widthKeys = Object.keys(this._leafColumnWidth);
-                let contentSizeWidth = widthKeys.reduce((acc, item) => acc + this._leafColumnWidth[item], 0);
+                let contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
                 let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - (this._elementBodyFrozen.style.width.replace(/px/gi, '') * 1);
 
                 if (contentSizeWidth <= currentGridWidth && 0 < widthKeys.length) {
@@ -3735,7 +3751,7 @@ function viewer(zs) {
             if (_this2._settings.showCalculatedColumnStyle) {
                 let widthKeys = Object.keys(this._leafColumnWidth);
                 let contentSizeWidth = widthKeys.reduce(function (acc, item) {
-                    return acc + _this2._leafColumnWidth[item];
+                    return acc + Number(_this2._leafColumnWidth[item]);
                 }, 0);
 
                 this._elementHeadCalculatedColumn.style.left = contentSizeWidth + frozenWidth - 1 + "px";
