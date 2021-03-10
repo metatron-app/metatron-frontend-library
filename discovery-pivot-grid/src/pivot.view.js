@@ -744,8 +744,8 @@ function viewer(zs) {
                         let propertyName = objViewer._settings.sortColumnMeasure;
 
                         //값이 null일 경우 정렬이 정상적이지 않는 문제로 추가된 로직
-                        let currAxisItem = (currItem[propertyName]) ? currItem[propertyName] : currItem[propertyName] = 0;
-                        let nextAxisItem = (nextItem[propertyName]) ? nextItem[propertyName] : nextItem[propertyName] = 0;
+                        let currAxisItem = (currItem[propertyName]) ? currItem[propertyName] : 0;
+                        let nextAxisItem = (nextItem[propertyName]) ? nextItem[propertyName] : 0;
 
                         if (currAxisItem < nextAxisItem) {
                             nOrder = (objViewer._settings.sortType === Viewer.SORT_COL_MODE.ASC) ? -1 : 1;
