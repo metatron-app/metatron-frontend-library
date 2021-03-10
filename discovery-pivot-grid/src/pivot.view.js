@@ -2030,7 +2030,7 @@ function viewer(zs) {
                                 if (context) {
                                     let itemData = context.item[zpiProp.name];
                                     columnAttributes["data-key"] = zpiProp.name;
-                                    columnAttributes["title"] = zpiProp.name + ":" + itemData;
+                                    columnAttributes["title"] = zpiProp.name + ":" + (itemData ? itemData : '');
 
                                     // #20161227-02 Cell Click Event 추가 : Cell Data 설정 - Start
                                     for (let key in context.item) {
@@ -3001,7 +3001,7 @@ function viewer(zs) {
                                     let itemData = context.item[zpiProp.name];
 
                                     columnAttributes["data-key"] = zpiProp.name;
-                                    columnAttributes["title"] = zpiProp.name + ":" + itemData;
+                                    columnAttributes["title"] = zpiProp.name + ":" + (itemData ? itemData : '');
 
                                     // #20161227-02 Cell Click Event 추가 : Cell Data 설정 - Start
                                     let isCalRow = false;
