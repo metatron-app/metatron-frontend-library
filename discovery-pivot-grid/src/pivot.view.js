@@ -1006,7 +1006,6 @@ function viewer(zs) {
                     }, 0);
                     let currentGridWidth = objViewer._elementBody.style.width.replace(/px/gi, '') * 1 - objViewer._elementBodyFrozen.style.width.replace(/px/gi, '') * 1;
 
-
                     if (currentGridWidth < contentSizeWidth) {
                         // current state is scroll!!
                         if (!objViewer._leafColumnWidth[strLeafColName]) {
@@ -1421,7 +1420,12 @@ function viewer(zs) {
                 }
             }
             // 20180807 : Koo : Resize Column - E
-            range.right = Math.min(this._xItems.length - 1, range.left + Math.ceil((this._elementBody.clientWidth - frozenWidth + (this._scrollLeft - range.left * cellWidth)) / cellWidth) - 1);
+
+            // 20210316 : Harry : Column Right Range - S
+            // range.right = Math.min(this._xItems.length - 1, range.left + Math.ceil((this._elementBody.clientWidth - frozenWidth + (this._scrollLeft - range.left * cellWidth)) / cellWidth) - 1);
+            range.right = this._xItems.length - 1;
+            // 20210316 : Harry : Column Right Range - E
+
             if (!isForceRender && this._isPivot && range.top === this._itemsRange.top && range.bottom === this._itemsRange.bottom && range.left === this._itemsRange.left && range.right === this._itemsRange.right) {
                 let el = this._elementHeadWrap.querySelector("." + pivotStyle.cssClass.headRow + ":first-child ." + pivotStyle.cssClass.bodyCell + ":first-child");
                 if (el) {
@@ -2321,7 +2325,11 @@ function viewer(zs) {
             }
             // 20180807 : Koo : Resize Column - E
 
-            range.right = Math.min(this._xItems.length - 1, range.left + Math.ceil((this._elementBody.clientWidth - frozenWidth + (this._scrollLeft - range.left * cellWidthZ)) / cellWidthZ) - 1);
+            // 20210316 : Harry : Column Right Range - S
+            // range.right = Math.min(this._xItems.length - 1, range.left + Math.ceil((this._elementBody.clientWidth - frozenWidth + (this._scrollLeft - range.left * cellWidthZ)) / cellWidthZ) - 1);
+            range.right = this._xItems.length - 1;
+            // 20210316 : Harry : Column Right Range - E
+
             if (!isForceRender && range.top === this._itemsRange.top && range.bottom === this._itemsRange.bottom && range.left === this._itemsRange.left && range.right === this._itemsRange.right) {
                 let el = this._elementHeadWrap.querySelector("." + pivotStyle.cssClass.headRow + ":first-child ." + pivotStyle.cssClass.bodyCell + ":first-child");
                 if (el) {
