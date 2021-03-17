@@ -2123,27 +2123,45 @@ function viewer(zs) {
                                     //     columnStyles["background-color"] = this._settings.header.backgroundColor;
                                     // }
 
+                                    // 20210317 : Harry : Measure Field Format Setting - S
+                                    let fieldFormat = this._settings.format;
+                                    if (zpiProp.fieldFormat) {
+                                        // original
+                                        if (!this._isPivot && zpiProp.fieldFormat.length > 0) {
+                                            zpiProp.fieldFormat.forEach(item => {
+                                                if (context.item.COLUMNS === item.aggrColumn) {
+                                                fieldFormat = item;
+                                            }
+                                        });
+                                        }
+                                        // pivot
+                                        else {
+                                            fieldFormat = zpiProp.fieldFormat;
+                                        }
+                                    }
+                                    // 20210317 : Harry : Measure Field Format Setting - E
+
                                     html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                                     if (zpiProp.type && 'origin' === this._settings.format.type && !this._isPivot) {
                                         if (context.item.COLUMNS) {
                                             if (zpiProp.type[context.item.COLUMNS]) {
-                                                // 20210308 : Harry : Measure Field Format Setting - S
-                                                html.push(common.numberFormat(itemData, (!zpiProp.fieldFormat ? this._settings.format : zpiProp.fieldFormat), zpiProp.type[context.item.COLUMNS]));
-                                                // 20210308 : Harry : Measure Field Format Setting - E
+                                                // 20210317 : Harry : Number Format Setting - S
+                                                html.push(common.numberFormat(itemData, fieldFormat, zpiProp.type[context.item.COLUMNS]));
+                                                // 20210317 : Harry : Number Format Setting - E
                                             } else {
-                                                // 20210308 : Harry : Measure Field Format Setting - S
-                                                html.push(common.numberFormat(itemData, (!zpiProp.fieldFormat ? this._settings.format : zpiProp.fieldFormat)));
-                                                // 20210308 : Harry : Measure Field Format Setting - E
+                                                // 20210317 : Harry : Number Format Setting - S
+                                                html.push(common.numberFormat(itemData, fieldFormat));
+                                                // 20210317 : Harry : Number Format Setting - E
                                             }
                                         } else {
-                                            // 20210308 : Harry : Measure Field Format Setting - S
-                                            html.push(common.numberFormat(itemData, (!zpiProp.fieldFormat ? this._settings.format : zpiProp.fieldFormat), zpiProp.type));
-                                            // 20210308 : Harry : Measure Field Format Setting - E
+                                            // 20210317 : Harry : Number Format Setting - S
+                                            html.push(common.numberFormat(itemData, fieldFormat, zpiProp.type));
+                                            // 20210317 : Harry : Number Format Setting - E
                                         }
                                     } else {
-                                        // 20210308 : Harry : Measure Field Format Setting - S
-                                        html.push(common.numberFormat(itemData, (!zpiProp.fieldFormat ? this._settings.format : zpiProp.fieldFormat)));
-                                        // 20210308 : Harry : Measure Field Format Setting - E
+                                        // 20210317 : Harry : Number Format Setting - S
+                                        html.push(common.numberFormat(itemData, fieldFormat));
+                                        // 20210317 : Harry : Number Format Setting - E
                                     }
                                     html.push("</div>");
                                     contains = true;
@@ -2212,16 +2230,34 @@ function viewer(zs) {
                                 columnStyles["width"] = Number(leafColWidth[leafColName]) + "px";
                                 // 20180807 : Koo : Resize Column - E
 
+                                // 20210317 : Harry : Measure Field Format Setting - S
+                                let fieldFormat = this._settings.format;
+                                if (zpiProp.fieldFormat) {
+                                    // original
+                                    if (!this._isPivot && zpiProp.fieldFormat.length > 0) {
+                                        zpiProp.fieldFormat.forEach(item => {
+                                            if (context.item.COLUMNS === item.aggrColumn) {
+                                            fieldFormat = item;
+                                        }
+                                    });
+                                    }
+                                    // pivot
+                                    else {
+                                        fieldFormat = zpiProp.fieldFormat;
+                                    }
+                                }
+                                // 20210317 : Harry : Measure Field Format Setting - E
+
                                 let summaryKey = '' === leafColName ? zpiProp.name : leafColName + '||' + zpiProp.name;
                                 html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                                 if (zpiProp.type && 'origin' === this._settings.format.type && !this._isPivot) {
-                                    // 20210308 : Harry : Measure Field Format Setting - S
-                                    html.push(common.numberFormat(this.getSummaryValue(this.summaryMap[summaryKey], this._settings.totalValueStyle), (!zpiProp.fieldFormat ? this._settings.format : zpiProp.fieldFormat), zpiProp.type));
-                                    // 20210308 : Harry : Measure Field Format Setting - E
+                                    // 20210317 : Harry : Number Format Setting - S
+                                    html.push(common.numberFormat(this.getSummaryValue(this.summaryMap[summaryKey], this._settings.totalValueStyle), fieldFormat, zpiProp.type));
+                                    // 20210317 : Harry : Number Format Setting - E
                                 } else {
-                                    // 20210308 : Harry : Measure Field Format Setting - S
-                                    html.push(common.numberFormat(this.getSummaryValue(this.summaryMap[summaryKey], this._settings.totalValueStyle), (!zpiProp.fieldFormat ? this._settings.format : zpiProp.fieldFormat)));
-                                    // 20210308 : Harry : Measure Field Format Setting - E
+                                    // 20210317 : Harry : Number Format Setting - S
+                                    html.push(common.numberFormat(this.getSummaryValue(this.summaryMap[summaryKey], this._settings.totalValueStyle), fieldFormat));
+                                    // 20210317 : Harry : Number Format Setting - E
                                 }
                                 html.push("</div>");
                             } // end for - xii
@@ -3110,15 +3146,33 @@ function viewer(zs) {
                                     //     columnStyles["background-color"] = this._settings.header.backgroundColor;
                                     // }
 
+                                    // 20210317 : Harry : Measure Field Format Setting - S
+                                    let fieldFormat = this._settings.format;
+                                    if (zpiProp.fieldFormat) {
+                                        // original
+                                        if (!this._isPivot && zpiProp.fieldFormat.length > 0) {
+                                            zpiProp.fieldFormat.forEach(item => {
+                                                if (context.item.COLUMNS === item.aggrColumn) {
+                                                    fieldFormat = item;
+                                                }
+                                            });
+                                        }
+                                        // pivot
+                                        else {
+                                            fieldFormat = zpiProp.fieldFormat;
+                                        }
+                                    }
+                                    // 20210317 : Harry : Measure Field Format Setting - E
+
                                     html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                                     if (zpiProp.type && 'origin' === this._settings.format.type && !this._isPivot) {
-                                        // 20210308 : Harry : Measure Field Format Setting - S
-                                        html.push(common.numberFormat(itemData, (!zpiProp.fieldFormat ? this._settings.format : zpiProp.fieldFormat), zpiProp.type));
-                                        // 20210308 : Harry : Measure Field Format Setting - E
+                                        // 20210317 : Harry : Number Format Setting - S
+                                        html.push(common.numberFormat(itemData, fieldFormat, zpiProp.type));
+                                        // 20210317 : Harry : Number Format Setting - E
                                     } else {
-                                        // 20210308 : Harry : Measure Field Format Setting - S
-                                        html.push(common.numberFormat(itemData, (!zpiProp.fieldFormat ? this._settings.format : zpiProp.fieldFormat)));
-                                        // 20210308 : Harry : Measure Field Format Setting - E
+                                        // 20210317 : Harry : Number Format Setting - S
+                                        html.push(common.numberFormat(itemData, fieldFormat));
+                                        // 20210317 : Harry : Number Format Setting - E
                                     }
                                     html.push("</div>");
                                     contains = true;
@@ -3197,15 +3251,33 @@ function viewer(zs) {
                                 columnStyles["width"] = leafColWidth[summaryKey] + "px";
                                 // 20180807 : Koo : Resize Column - E
 
+                                // 20210317 : Harry : Measure Field Format Setting - S
+                                let fieldFormat = this._settings.format;
+                                if (zpiProp.fieldFormat) {
+                                    // original
+                                    if (!this._isPivot && zpiProp.fieldFormat.length > 0) {
+                                        zpiProp.fieldFormat.forEach(item => {
+                                            if (context.item.COLUMNS === item.aggrColumn) {
+                                                fieldFormat = item;
+                                            }
+                                        });
+                                    }
+                                    // pivot
+                                    else {
+                                        fieldFormat = zpiProp.fieldFormat;
+                                    }
+                                }
+                                // 20210317 : Harry : Measure Field Format Setting - E
+
                                 html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                                 if (zpiProp.type && 'origin' === this._settings.format.type && !this._isPivot) {
-                                    // 20210308 : Harry : Measure Field Format Setting - S
-                                    html.push(common.numberFormat(this.getSummaryValue(this.summaryMap[summaryKey], this._settings.totalValueStyle), (!zpiProp.fieldFormat ? this._settings.format : zpiProp.fieldFormat), zpiProp.type));
-                                    // 20210308 : Harry : Measure Field Format Setting - E
+                                    // 20210317 : Harry : Number Format Setting - S
+                                    html.push(common.numberFormat(this.getSummaryValue(this.summaryMap[summaryKey], this._settings.totalValueStyle), fieldFormat, zpiProp.type));
+                                    // 20210317 : Harry : Number Format Setting - E
                                 } else {
-                                    // 20210308 : Harry : Measure Field Format Setting - S
-                                    html.push(common.numberFormat(this.getSummaryValue(this.summaryMap[summaryKey], this._settings.totalValueStyle), (!zpiProp.fieldFormat ? this._settings.format : zpiProp.fieldFormat)));
-                                    // 20210308 : Harry : Measure Field Format Setting - E
+                                    // 20210317 : Harry : Number Format Setting - S
+                                    html.push(common.numberFormat(this.getSummaryValue(this.summaryMap[summaryKey], this._settings.totalValueStyle), fieldFormat));
+                                    // 20210317 : Harry : Number Format Setting - E
                                 }
                                 html.push("</div>");
 
