@@ -495,8 +495,11 @@ function viewer(zs) {
                     //20170811 Dolkkok - 피봇데이터기반으로 변경
 
                     if (objViewer._settings.showCalculatedColumnStyle) {
+                        //TODO - harry
+                        // 20210322 : Harry : Add Calculated Column To summaryMap - S
                         // 연산열 대상 데이터를 summaryMap에 추가
-                        Viewer.prototype.appendCalculatedColumnDataToSummaryMap(column, objViewer.summaryMap);
+                        Viewer.prototype.appendCalculatedColumnDataToSummaryMap(column, objViewer.summaryMap, objViewer._settings.dataColumnMode);
+                        // 20210322 : Harry : Add Calculated Column To summaryMap - E
                     }
 
                     //TODO - harry
@@ -2951,7 +2954,7 @@ function viewer(zs) {
             }
             // body-frozen : y축 영역 표시 - End
 
-            // 연산열 - body
+            // 연산 열 - body
             if (this._settings.showCalculatedColumnStyle) {
                 html.length = 0;
                 // 연산 열 데이터 표시
@@ -3882,13 +3885,13 @@ function viewer(zs) {
             }
         };
 
-        Viewer.prototype.appendCalculatedColumnDataToSummaryMap = function (column, summaryMap) {
+        Viewer.prototype.appendCalculatedColumnDataToSummaryMap = function (column, summaryMap, dataColumnMode) {
             for (let i = 0; i < column.seriesName.length; i++) {
                 //TODO - harry
-                // 20210319 : Harry : summaryMap Key Setting - S
+                // 20210322 : Harry : summaryMap Key Setting - S
                 // let key = _.split(column.seriesName[i], '―').join("||");
-                let key = _.split(column.seriesName[i], '―').join("||") + '||' + column.name.split(common.__fieldSeparator).splice(-1, 1).join('');
-                // 20210319 : Harry : summaryMap Key Setting - E
+                let key = _.split(column.seriesName[i], '―').join("||") + ( (dataColumnMode && dataColumnMode === Viewer.DATA_COL_MODE.LEFT) ? '||' + column.name.split(common.__fieldSeparator).splice(-1, 1).join('') : '' );
+                // 20210322 : Harry : summaryMap Key Setting - E
 
                 if (key === '') {
                     key = Viewer.EMPTY_Y_AXIS_DIMENSION_KEY;
@@ -3897,7 +3900,7 @@ function viewer(zs) {
                 summaryMap[key] || (summaryMap[key] = []);
 
                 if (column.value[i]) {
-                    summaryMap[key].push(column.value[i])
+                    summaryMap[key].push(column.value[i]);
                 }
             }
         };
@@ -3926,14 +3929,14 @@ function viewer(zs) {
             // 20210319 : Harry : Measure Field Format Setting - S
             let fieldFormat = this._settings.format;
             let zpiProp = this._settings.zProperties.filter(item => item.name === summaryMapKey.split('||').splice(-1, 1).join(''));
-            if (zpiProp && zpiProp[0].fieldFormat) {
+            if (zpiProp.length > 0 && zpiProp[0].fieldFormat) {
                 // original
                 if (!this._isPivot && zpiProp[0].fieldFormat.length > 0) {
                     zpiProp.fieldFormat.forEach(item => {
                         if (context.item.COLUMNS === item.aggrColumn) {
-                        fieldFormat = item;
-                    }
-                });
+                            fieldFormat = item;
+                        }
+                    });
                 }
                 // pivot
                 else {
