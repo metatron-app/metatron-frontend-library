@@ -384,6 +384,13 @@ function viewer(zs) {
                                 const endArr = col.value.slice(idx, col.value.length);
                                 frontArr.push(this.getSummaryValue(valList, subCalc[splitRow.length - 2]));
                                 col.value = frontArr.concat(endArr);
+                                // 20210323 : Harry : Add Sub Total Column summaryMapKey - S
+                                if (idx >= col.seriesName.length) {
+                                    col.seriesName.push(col.seriesName.slice(-1)[0].split('―')[0] + '―SUB-TOTAL');
+                                } else {
+                                    col.seriesName.splice(idx, 0, col.seriesName[idx-1].split('―')[0] + '―SUB-TOTAL');
+                                }
+                                // 20210323 : Harry : Add Sub Total Column summaryMapKey - E
                             }
                         });
                     });
@@ -489,20 +496,15 @@ function viewer(zs) {
                     // let colNameList = _.split(column.name, '―'); // TODO : 확인 필요 -> Github 버전
                     let colNameList = column.name ? column.name.split(common.__fieldSeparator) : [''];
 
-                    //TODO - harry
-                    // if (columnIdx % zPropCount !== 0) return;
-
                     //20170811 Dolkkok - 피봇데이터기반으로 변경
 
                     if (objViewer._settings.showCalculatedColumnStyle) {
-                        //TODO - harry
                         // 20210322 : Harry : Add Calculated Column To summaryMap - S
                         // 연산열 대상 데이터를 summaryMap에 추가
                         Viewer.prototype.appendCalculatedColumnDataToSummaryMap(column, objViewer.summaryMap, objViewer._settings.dataColumnMode);
                         // 20210322 : Harry : Add Calculated Column To summaryMap - E
                     }
 
-                    //TODO - harry
                     // 20210319 : Harry : Column Index Remainder Check - S
                     if (columnIdx % zPropCount !== 0) return;
                     // 20210319 : Harry : Column Index Remainder Check - E
@@ -1842,7 +1844,6 @@ function viewer(zs) {
 
                                 frozenColumnStylesLeft += leafFrozenColWidth[propertyName];
 
-                                //TODO - harry
                                 // 20210319 : Harry : calculatedColumns Setting - S
                                 // zpi가 0인 경우에 대한 calculatedColumns[] 열 합계 추가
                                 if (this._settings.showCalculatedColumnStyle && (ypi == this._settings.yProperties.length - 1) && value) {
@@ -1855,8 +1856,7 @@ function viewer(zs) {
                             }
                         } // end if - zpi is zero
 
-                        //TODO - harry
-                        // 20210319 : Harry : calculatedColumns Setting - S
+                        // 20210323 : Harry : calculatedColumns Setting - S
                         // zpi가 0 이상인 경우에 대한 calculatedColumns[] 열 합계 추가
                         for (let ypi = 0; ypi < this._settings.yProperties.length; ypi++) {
                             let propertyName = this._settings.yProperties[ypi].name;
@@ -1868,14 +1868,15 @@ function viewer(zs) {
                             } 	// end for - yProperties
 
 
-                            if (this._settings.showCalculatedColumnStyle && (ypi == this._settings.yProperties.length - 1) && value) {
+                            if (this._settings.showCalculatedColumnStyle && (ypi == this._settings.yProperties.length - 1) && value
+                                && !calculatedColumns.filter(item => item.summaryMapKey === arrVals.concat([value]).join("||") + '||' + this._settings.zProperties[zpi].name).length) {
                                 calculatedColumns.push({
                                     summaryMapKey: arrVals.concat([value]).join("||") + '||' + this._settings.zProperties[zpi].name,
                                     top: index * cellHeight
                                 });
                             }
                         }
-                        // 20210319 : Harry : calculatedColumns Setting - E
+                        // 20210323 : Harry : calculatedColumns Setting - E
 
                         // z-axis 추가
                         if (this._settings.body.showAxisZ) {
@@ -2908,12 +2909,15 @@ function viewer(zs) {
                         html.push("</div>");
 
                         frozenColumnStylesLeft += leafFrozenColWidth[propertyName];
-                        if (this._settings.showCalculatedColumnStyle && (ypi == this._settings.yProperties.length - 1) && value) {
+                        // 20210323 : Harry : calculatedColumns Setting - S
+                        if (this._settings.showCalculatedColumnStyle && (ypi == this._settings.yProperties.length - 1) && value
+                            && !calculatedColumns.filter(item => item.summaryMapKey === arrVals.concat([value]).join("||")).length) {
                             calculatedColumns.push({
                                 summaryMapKey: arrVals.concat([value]).join("||"),
                                 top: index * cellHeight
                             });
                         }
+                        // 20210323 : Harry : calculatedColumns Setting - S
                     }
 
                     html.push("</div>");
@@ -3823,7 +3827,6 @@ function viewer(zs) {
          * @param summarySettings
          */
         Viewer.prototype.getSummaryValue = function (dataList, summarySettings) {
-            //TODO - harry
             // 20210319 : Harry : dataList Valid Check - S
             if (!dataList) {
                 return;
@@ -3887,11 +3890,12 @@ function viewer(zs) {
 
         Viewer.prototype.appendCalculatedColumnDataToSummaryMap = function (column, summaryMap, dataColumnMode) {
             for (let i = 0; i < column.seriesName.length; i++) {
-                //TODO - harry
-                // 20210322 : Harry : summaryMap Key Setting - S
+                // 20210323 : Harry : summaryMap Key Setting - S
                 // let key = _.split(column.seriesName[i], '―').join("||");
-                let key = _.split(column.seriesName[i], '―').join("||") + ( (dataColumnMode && dataColumnMode === Viewer.DATA_COL_MODE.LEFT) ? '||' + column.name.split(common.__fieldSeparator).splice(-1, 1).join('') : '' );
-                // 20210322 : Harry : summaryMap Key Setting - E
+                let seriesNames = column.seriesName[i];
+                let key = (seriesNames.indexOf('SUB-TOTAL') > -1) ? seriesNames.split('―')[0] + '||SUB-TOTAL' : seriesNames.split('―').join("||");
+                key += (dataColumnMode && dataColumnMode === Viewer.DATA_COL_MODE.LEFT) ? '||' + column.name.split(common.__fieldSeparator).splice(-1, 1).join('') : '';
+                // 20210323 : Harry : summaryMap Key Setting - E
 
                 if (key === '') {
                     key = Viewer.EMPTY_Y_AXIS_DIMENSION_KEY;
@@ -3906,6 +3910,12 @@ function viewer(zs) {
         };
 
         Viewer.prototype.appendBodyCalculatedColumnToHtml = function (summaryMapKey, columnTop, columnHeight, html) {
+            // 20210323 : Harry : summaryMap Value Check - S
+            if (!this.summaryMap[summaryMapKey]) {
+                return;
+            }
+            // 20210323 : Harry : summaryMap Value Check - E
+
             let rowAttributes = {};
             rowAttributes["class"] = pivotStyle.cssClass.bodyRow;
             rowAttributes["class"] = this.addClassFontStyle(rowAttributes["class"], this._settings.showCalculatedColumnStyle.font);
@@ -3925,8 +3935,8 @@ function viewer(zs) {
             columnStyles["color"] = this._settings.showCalculatedColumnStyle.font.color;
             columnStyles["background-color"] = this._settings.showCalculatedColumnStyle.backgroundColor;
 
-            //TODO - harry
             // 20210319 : Harry : Measure Field Format Setting - S
+            let summaryMapValue = this.summaryMap[summaryMapKey];
             let fieldFormat = this._settings.format;
             let zpiProp = this._settings.zProperties.filter(item => item.name === summaryMapKey.split('||').splice(-1, 1).join(''));
             if (zpiProp.length > 0 && zpiProp[0].fieldFormat) {
@@ -3947,10 +3957,9 @@ function viewer(zs) {
 
             html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
 
-            //TODO - harry
             // 20210319 : Harry : Number Format Setting - S
             // html.push(common.numberFormat(this.getSummaryValue(this.summaryMap[summaryMapKey], this._settings.showCalculatedColumnStyle), this._settings.format));
-            html.push(common.numberFormat(this.getSummaryValue(this.summaryMap[summaryMapKey], this._settings.showCalculatedColumnStyle), fieldFormat));
+            html.push(common.numberFormat(this.getSummaryValue(summaryMapValue, this._settings.showCalculatedColumnStyle), fieldFormat));
             // 20210319 : Harry : Number Format Setting - E
 
             html.push("</div>");
