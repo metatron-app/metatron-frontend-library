@@ -313,88 +313,178 @@ function viewer(zs) {
                     });
                 }
                 if (this._settings.subCalcCellStyle) {
-                    // Row 정보에 Sub Total 추가 - Start
-                    const subCalc = this._settings.yProperties.map(yProp => this._settings.subCalcCellStyle[yProp.name.toLowerCase()]);
-                    let rowArr = items.rows.map(row => row.split('―'));
-                    let prevRowInfo = rowArr[0];
-                    for (let idx1 = 0, nMax = rowArr.length; idx1 < nMax; idx1++) {
-                        let rowInfo = rowArr[idx1];
-                        // console.info( '%c>>>>>> rowInfo / prevRowInfo', 'color:#FF0000;background-color:#FFFF00;', rowInfo, prevRowInfo );
-                        // console.info( rowInfo[0] )
-                        // console.info( '\'TOTAL\' !== rowInfo[0]', 'TOTAL' !== rowInfo[0]);
-                        // console.info( '%c>>>>>> rowInfo / prevRowInfo', 'color:#0000FF;', rowInfo, prevRowInfo );
-                        for (let idx2 = subCalc.length - 1; idx2 >= 0; idx2--) {
-                            // console.info( '>>>>> idx : %s, prevRowInfo : %s, rowInfo : %s, T/F : %s', idx2, prevRowInfo.slice(0, idx2).join('>'), rowInfo.slice(0, idx2).join('>'), prevRowInfo.slice(0, idx2).join('>') !== rowInfo.slice(0, idx2).join('>') );
-                            if (subCalc[idx2]
-                                && prevRowInfo.slice(0, idx2).join('>') !== rowInfo.slice(0, idx2).join('>')) {
-                                // console.info( '%c>>>>> create subtotal', 'color:#FFFFFF;background-color:#0000FF;' );
-                                // sub-total 항목을 넣어준다.
-                                const frontArr = rowArr.slice(0, idx1);
-                                const endArr = rowArr.slice(idx1, rowArr.length);
-                                const subTotalItem = [].concat(prevRowInfo.slice(0, idx2));
-                                subTotalItem.push('SUB-TOTAL');
-                                frontArr.push(subTotalItem);
-                                rowArr = frontArr.concat(endArr);
-                                // sub total 이 추가되면서 변경되는 index 번호를 재조정 해준다.
-                                if (nMax !== rowArr.length) {
-                                    idx1 = idx1 + (rowArr.length - nMax);
-                                    nMax = rowArr.length;
-                                }
-                            }
-                        }
-                        prevRowInfo = rowArr[idx1];
-                    }
-                    if ('TOTAL' !== prevRowInfo[0]) {
-                        // 마지막 줄 SUB-TOTAL 추가
-                        for (let idx2 = subCalc.length - 1; idx2 >= 0; idx2--) {
-                            if (subCalc[idx2]) {
-                                const frontArr = rowArr;
-                                const subTotalItem = [].concat(prevRowInfo.slice(0, idx2));
-                                if (0 < subTotalItem.length) {
+
+                    // Horizontal Sub Total
+                    if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.LEFT) {
+                        // Row 정보에 Sub Total 추가 - Start
+                        const subCalc = this._settings.yProperties.map(yProp => this._settings.subCalcCellStyle[yProp.name.toLowerCase()]);
+                        let rowArr = items.rows.map(row => row.split('―'));
+                        let prevRowInfo = rowArr[0];
+                        for (let idx1 = 0, nMax = rowArr.length; idx1 < nMax; idx1++) {
+                            let rowInfo = rowArr[idx1];
+                            // console.info( '%c>>>>>> rowInfo / prevRowInfo', 'color:#FF0000;background-color:#FFFF00;', rowInfo, prevRowInfo );
+                            // console.info( rowInfo[0] )
+                            // console.info( '\'TOTAL\' !== rowInfo[0]', 'TOTAL' !== rowInfo[0]);
+                            // console.info( '%c>>>>>> rowInfo / prevRowInfo', 'color:#0000FF;', rowInfo, prevRowInfo );
+                            for (let idx2 = subCalc.length - 1; idx2 >= 0; idx2--) {
+                                // console.info( '>>>>> idx : %s, prevRowInfo : %s, rowInfo : %s, T/F : %s', idx2, prevRowInfo.slice(0, idx2).join('>'), rowInfo.slice(0, idx2).join('>'), prevRowInfo.slice(0, idx2).join('>') !== rowInfo.slice(0, idx2).join('>') );
+                                if (subCalc[idx2]
+                                    && prevRowInfo.slice(0, idx2).join('>') !== rowInfo.slice(0, idx2).join('>')) {
+                                    // console.info( '%c>>>>> create subtotal', 'color:#FFFFFF;background-color:#0000FF;' );
+                                    // sub-total 항목을 넣어준다.
+                                    const frontArr = rowArr.slice(0, idx1);
+                                    const endArr = rowArr.slice(idx1, rowArr.length);
+                                    const subTotalItem = [].concat(prevRowInfo.slice(0, idx2));
                                     subTotalItem.push('SUB-TOTAL');
                                     frontArr.push(subTotalItem);
-                                    rowArr = [].concat(frontArr);
+                                    rowArr = frontArr.concat(endArr);
+                                    // sub total 이 추가되면서 변경되는 index 번호를 재조정 해준다.
+                                    if (nMax !== rowArr.length) {
+                                        idx1 = idx1 + (rowArr.length - nMax);
+                                        nMax = rowArr.length;
+                                    }
+                                }
+                            }
+                            prevRowInfo = rowArr[idx1];
+                        }
+                        if ('TOTAL' !== prevRowInfo[0]) {
+                            // 마지막 줄 SUB-TOTAL 추가
+                            for (let idx2 = subCalc.length - 1; idx2 >= 0; idx2--) {
+                                if (subCalc[idx2]) {
+                                    const frontArr = rowArr;
+                                    const subTotalItem = [].concat(prevRowInfo.slice(0, idx2));
+                                    if (0 < subTotalItem.length) {
+                                        subTotalItem.push('SUB-TOTAL');
+                                        frontArr.push(subTotalItem);
+                                        rowArr = [].concat(frontArr);
+                                    }
                                 }
                             }
                         }
-                    }
-                    items.rows = rowArr.map(rowInfo => rowInfo.join(common.__fieldSeparator));
-                    // Row 정보에 Sub Total 추가 - End
+                        items.rows = rowArr.map(rowInfo => rowInfo.join(common.__fieldSeparator));
+                        // Row 정보에 Sub Total 추가 - End
 
-                    // Column 정보에 Sub Total 에 따른 category 정보 추가 - Start
-                    items.columns.forEach(col => {
-                        items.rows.forEach((row, idx) => {
-                            if (-1 < row.indexOf('SUB-TOTAL')) {
+                        // Column 정보에 Sub Total 에 따른 category 정보 추가 - Start
+                        items.columns.forEach(col => {
+                            items.rows.forEach((row, idx) => {
+                                if (-1 < row.indexOf('SUB-TOTAL')) {
+
+                                    // 값 목록 추출
+                                    const splitRow = row.split(common.__fieldSeparator);
+                                    const subTotalPrefix = splitRow.slice(0, splitRow.length - 1).join(common.__fieldSeparator);
+                                    const valList = [];
+                                    for (let idx2 = idx - 1; idx2 >= 0; idx2--) {
+                                        if (0 !== items.rows[idx2].indexOf(subTotalPrefix)) {
+                                            break;
+                                        }
+                                        if (-1 < items.rows[idx2].indexOf('SUB-TOTAL')) {
+                                            continue;
+                                        }
+                                        valList.push(col.value[idx2]);
+                                    }
+
+                                    const frontArr = col.value.slice(0, idx);
+                                    const endArr = col.value.slice(idx, col.value.length);
+                                    frontArr.push(this.getSummaryValue(valList, subCalc[splitRow.length - 2]));
+                                    col.value = frontArr.concat(endArr);
+                                    // 20210323 : Harry : Add Sub Total Column summaryMapKey - S
+                                    if (idx >= col.seriesName.length) {
+                                        col.seriesName.push(col.seriesName.slice(-1)[0].split('―')[0] + '―SUB-TOTAL');
+                                    } else {
+                                        col.seriesName.splice(idx, 0, col.seriesName[idx-1].split('―')[0] + '―SUB-TOTAL');
+                                    }
+                                    // 20210323 : Harry : Add Sub Total Column summaryMapKey - E
+                                }
+                            });
+                        });
+                        // Column 정보에 Sub Total 에 따른 category 정보 추가 - End
+                    }
+                    //TODO - harry
+                    // 20210330 : Harry : Vertical Sub Total Setting - S
+                    else if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP) {
+
+                        // Row 정보에 Sub Total 추가 - Start
+                        const subCalc = this._settings.xProperties.map(xProp => this._settings.subCalcCellStyle[xProp.name.toLowerCase()]).filter(item => item !== undefined);
+
+                        //TODO - harry
+                        let rowArr = items.rows.map(row => row.split('―'));
+                        let colArr = items.columns;
+                        let prevColInfo = colArr[0];
+
+                        //TODO - harry
+                        for (let idx1 = 0, nMax = colArr.length; idx1 < nMax; idx1++) {
+                            let colInfo = colArr[idx1];
+                            // console.info( '%c>>>>>> colInfo / prevColInfo', 'color:#FF0000;background-color:#FFFF00;', colInfo, prevColInfo );
+                            // console.info( colInfo[0] )
+                            // console.info( '\'TOTAL\' !== colInfo[0]', 'TOTAL' !== colInfo[0]);
+                            // console.info( '%c>>>>>> colInfo / prevColInfo', 'color:#0000FF;', colInfo, prevColInfo );
+                            for (let idx2 = subCalc.length - 1; idx2 >= 0; idx2--) {
+                                // console.info( '>>>>> idx : %s, prevColInfo : %s, colInfo : %s, T/F : %s', idx2, prevColInfo.name.split('―').slice(0, idx2).join('>'), colInfo.name.split('―').slice(0, idx2).join('>'), prevColInfo.name.split('―').slice(0, idx2).join('>') !== colInfo.name.split('―').slice(0, idx2).join('>') );
+                                if (subCalc[idx2]
+                                    && prevColInfo.name.split('―').slice(0, idx2).join('>') !== colInfo.name.split('―').slice(0, idx2).join('>')) {
+                                    // console.info( '%c>>>>> create subtotal', 'color:#FFFFFF;background-color:#0000FF;' );
+                                    // sub-total 항목을 넣어준다.
+                                    const frontArr = colArr.slice(0, idx1);
+                                    const endArr = colArr.slice(idx1, colArr.length);
+
+                                    //TODO - harry
+                                    const subTotalItem = _.cloneDeep(frontArr.slice(-1)[0]);
+                                    subTotalItem.name = prevColInfo.name.split('―').slice(0, idx2).join('―') + '―SUB-TOTAL―' + subTotalItem.name.split('―').slice(-1).join('');
+                                    subTotalItem.value.fill(null);
+                                    subTotalItem.seriesValue.fill(null);
+
+                                    frontArr.push(subTotalItem);
+                                    colArr = frontArr.concat(endArr);
+                                    // sub total 이 추가되면서 변경되는 index 번호를 재조정 해준다.
+                                    if (nMax !== colArr.length) {
+                                        idx1 = idx1 + (colArr.length - nMax);
+                                        nMax = colArr.length;
+                                    }
+                                }
+                            }
+                            prevColInfo = colArr[idx1];
+                        }
+
+                        //TODO - harry
+                        if (prevColInfo.name.indexOf('SUB-TOTAL') < 0) {
+                            // 마지막 열 SUB-TOTAL 추가
+                            const subTotalItem = _.cloneDeep(prevColInfo);
+                            // subTotalItem.name = prevColInfo.name.split('―').slice(0, this._settings.xProperties.length - 1).join('―') + '―총합―' + prevColInfo.name.split('―').slice(-1).join('');
+                            subTotalItem.name = prevColInfo.name.split('―').slice(0, this._settings.xProperties.length - 1).join('―') + '―SUB-TOTAL―' + prevColInfo.name.split('―').slice(-1).join('');
+                            subTotalItem.value.fill(null);
+                            subTotalItem.seriesValue.fill(null);
+                            colArr.push(subTotalItem);
+                        }
+
+                        //TODO - harry
+                        items.rows = rowArr.map(rowInfo => rowInfo.join(common.__fieldSeparator));
+                        items.columns = colArr;
+
+                        //TODO - harry
+                        // Column 정보에 Sub Total 에 따른 summary value 정보 추가 - Start
+                        items.columns.forEach((col, idx) => {
+                            if (-1 < col.name.indexOf('SUB-TOTAL')) {
 
                                 // 값 목록 추출
-                                const splitRow = row.split(common.__fieldSeparator);
-                                const subTotalPrefix = splitRow.slice(0, splitRow.length - 1).join(common.__fieldSeparator);
-                                const valList = [];
-                                for (let idx2 = idx - 1; idx2 >= 0; idx2--) {
-                                    if (0 !== items.rows[idx2].indexOf(subTotalPrefix)) {
-                                        break;
-                                    }
-                                    if (-1 < items.rows[idx2].indexOf('SUB-TOTAL')) {
-                                        continue;
-                                    }
-                                    valList.push(col.value[idx2]);
-                                }
+                                const splitRow = col.name.split('―');
+                                const subTotalPrefix = splitRow.slice(0, this._settings.xProperties.length - 1).join('―');
+                                const subTotalColArr = items.columns.filter(item => item && item.name.indexOf(subTotalPrefix) > -1 && item.name.indexOf('SUB-TOTAL') < 0);
 
-                                const frontArr = col.value.slice(0, idx);
-                                const endArr = col.value.slice(idx, col.value.length);
-                                frontArr.push(this.getSummaryValue(valList, subCalc[splitRow.length - 2]));
-                                col.value = frontArr.concat(endArr);
-                                // 20210323 : Harry : Add Sub Total Column summaryMapKey - S
-                                if (idx >= col.seriesName.length) {
-                                    col.seriesName.push(col.seriesName.slice(-1)[0].split('―')[0] + '―SUB-TOTAL');
-                                } else {
-                                    col.seriesName.splice(idx, 0, col.seriesName[idx-1].split('―')[0] + '―SUB-TOTAL');
-                                }
-                                // 20210323 : Harry : Add Sub Total Column summaryMapKey - E
+                                // column(vertical) sub total summary value 정보 추가
+                                col.value.forEach((valueItem, valueIdx) => {
+                                    const valList = [];
+                                    subTotalColArr.forEach(subTotalColItem => {
+                                        if (subTotalColItem.value[valueIdx]) {
+                                            valList.push(subTotalColItem.value[valueIdx]);
+                                        }
+                                    });
+                                    col.value[valueIdx] = this.getSummaryValue(valList, subCalc[splitRow.length - 2]);
+                                });
                             }
                         });
-                    });
-                    // Column 정보에 Sub Total 에 따른 category 정보 추가 - End
+                        // Column 정보에 Sub Total 에 따른 category 정보 추가 - End
+                    }
+                    // 20210330 : Harry : Vertical Sub Total Setting - E
                 } else {
                     items.rows = items.rows.map(row => row.split('―').join(common.__fieldSeparator));
                 }
