@@ -406,12 +406,10 @@ function viewer(zs) {
                         // Row 정보에 Sub Total 추가 - Start
                         const subCalc = this._settings.xProperties.map(xProp => this._settings.subCalcCellStyle[xProp.name.toLowerCase()]).filter(item => item !== undefined);
 
-                        //TODO - harry
                         let rowArr = items.rows.map(row => row.split('―'));
                         let colArr = items.columns;
                         let prevColInfo = colArr[0];
 
-                        //TODO - harry
                         for (let idx1 = 0, nMax = colArr.length; idx1 < nMax; idx1++) {
                             let colInfo = colArr[idx1];
                             // console.info( '%c>>>>>> colInfo / prevColInfo', 'color:#FF0000;background-color:#FFFF00;', colInfo, prevColInfo );
@@ -427,7 +425,6 @@ function viewer(zs) {
                                     const frontArr = colArr.slice(0, idx1);
                                     const endArr = colArr.slice(idx1, colArr.length);
 
-                                    //TODO - harry
                                     const subTotalItem = _.cloneDeep(frontArr.slice(-1)[0]);
                                     subTotalItem.name = prevColInfo.name.split('―').slice(0, idx2).join('―') + '―SUB-TOTAL―' + subTotalItem.name.split('―').slice(-1).join('');
                                     subTotalItem.value.fill(null);
@@ -445,7 +442,6 @@ function viewer(zs) {
                             prevColInfo = colArr[idx1];
                         }
 
-                        //TODO - harry
                         if (prevColInfo.name.indexOf('SUB-TOTAL') < 0) {
                             // 마지막 열 SUB-TOTAL 추가
                             const subTotalItem = _.cloneDeep(prevColInfo);
@@ -456,11 +452,9 @@ function viewer(zs) {
                             colArr.push(subTotalItem);
                         }
 
-                        //TODO - harry
                         items.rows = rowArr.map(rowInfo => rowInfo.join(common.__fieldSeparator));
                         items.columns = colArr;
 
-                        //TODO - harry
                         // Column 정보에 Sub Total 에 따른 summary value 정보 추가 - Start
                         items.columns.forEach((col, idx) => {
                             if (-1 < col.name.indexOf('SUB-TOTAL')) {
@@ -948,12 +942,13 @@ function viewer(zs) {
 
             //add steve
             //let $resizeHandle = $container.find('.' + pivotStyle.cssClass.resizeHandle);
-            $(this._element).off('mouseenter', xAxisSelector).off('mouseleave', xAxisSelector).off('click', xAxisSelector).off('mouseenter', yAxisSelector).off('mouseleave', yAxisSelector).off('click', yAxisSelector).off('click', cellSelector).off('drag', resizeHandleSelector).off('dragend', resizeHandleSelector).on('mouseenter', xAxisSelector, function () {
-                if (0 === $(this).closest('.' + pivotStyle.cssClass.axisDisable).length) {
-                    // Hover 스타일 적용
-                    pivotStyle.setStyleVerticalCells.apply(objViewer, [$(this), $body.find(' .' + pivotStyle.cssClass.bodyRow), pivotStyle.cssClass.bodyHover]);
-                }
-            }) // on - mouseenter  : xAxisSelector
+            $(this._element).off('mouseenter', xAxisSelector).off('mouseleave', xAxisSelector).off('click', xAxisSelector).off('mouseenter', yAxisSelector).off('mouseleave', yAxisSelector).off('click', yAxisSelector).off('click', cellSelector).off('drag', resizeHandleSelector).off('dragend', resizeHandleSelector)
+                .on('mouseenter', xAxisSelector, function () {
+                    if (0 === $(this).closest('.' + pivotStyle.cssClass.axisDisable).length) {
+                        // Hover 스타일 적용
+                        pivotStyle.setStyleVerticalCells.apply(objViewer, [$(this), $body.find(' .' + pivotStyle.cssClass.bodyRow), pivotStyle.cssClass.bodyHover]);
+                    }
+                }) // on - mouseenter  : xAxisSelector
                 .on('mouseleave', xAxisSelector, function () {
                     $container.find('.' + pivotStyle.cssClass.bodyHover).removeClass(pivotStyle.cssClass.bodyHover);
                 }) // on - mouseleave  : xAxisSelector
@@ -1901,7 +1896,13 @@ function viewer(zs) {
 
                                 columnStyles = {};
                                 columnStyles["left"] = frozenColumnStylesLeft + "px";
-                                columnStyles["width"] = leafFrozenColWidth[propertyName] + "px";
+
+                                //TODO - harry
+                                // 20210330 : Harry : Leaf Frozen Column Width Setting - S
+                                frozenCellWidth = leafFrozenColWidth[propertyName];
+                                columnStyles["width"] = frozenCellWidth + "px";
+                                // 20210330 : Harry : Leaf Frozen Column Width Setting - E
+
                                 let tempCellHeight = rowspan * this._settings.zProperties.length * cellHeight;
                                 columnStyles["height"] = tempCellHeight + "px";
                                 // columnStyles["line-height"] = this.getLineHeightForValign( this._settings.header.align, tempCellHeight, rowspan ) + "px !important";
@@ -1910,16 +1911,30 @@ function viewer(zs) {
                                 if ('TOTAL' === value) {
                                     value = !this._settings.calcCellStyle.label || '' === this._settings.calcCellStyle.label
                                         ? pivotStyle.summaryLabel[this._settings.calcCellStyle.aggregationType] : this._settings.calcCellStyle.label;
-                                    columnStyles["width"] = (frozenCellWidth * this._settings.yProperties.length) + "px";
+
+                                    //TODO - harry
+                                    // 20210330 : Harry : Leaf Frozen Column Width Setting For Total - S
+                                    // columnStyles["width"] = (frozenCellWidth * this._settings.yProperties.length) + "px";
+                                    columnStyles["width"] = this._settings.yProperties.reduce((acc, item) => { return acc + Number(leafFrozenColWidth[item.name]) }, 0) + "px";
+                                    // 20210330 : Harry : Leaf Frozen Column Width Setting For Total - E
+
                                     columnStyles["color"] = this._settings.calcCellStyle.font.color;
                                     columnStyles["background-color"] = this._settings.calcCellStyle.backgroundColor;
                                 } else if ('SUB-TOTAL' === value) {
-                                    columnStyles["width"] = ((yPropMax - ypi) * frozenCellWidth) + "px";
                                     const subTotalPropName = this._settings.yProperties[ypi - 1].name;
                                     const subCellStyle = this._settings.subCalcCellStyle[subTotalPropName.toLowerCase()];
                                     // value = common.capitalize(subCellStyle.aggregationType) + '(' + yItem[subTotalPropName] + ')';
                                     value = !subCellStyle.label || '' === subCellStyle.label
                                         ? pivotStyle.subSummaryLabel[subCellStyle.aggregationType] : subCellStyle.label;
+
+                                    //TODO - harry
+                                    // 20210330 : Harry : Leaf Frozen Column Width Setting For Sub Total - S
+                                    // columnStyles["width"] = ((yPropMax - ypi) * frozenCellWidth) + "px";
+                                    columnStyles["width"] = this._settings.yProperties.reduce((acc, item, idx) => {
+                                        return (idx > this._settings.yProperties.findIndex(item => item.name === subTotalPropName)) ? acc + Number(leafFrozenColWidth[item.name]) : acc;
+                                    }, 0) + "px";
+                                    // 20210330 : Harry : Leaf Frozen Column Width Setting For Sub Total - E
+
                                     columnStyles["color"] = subCellStyle.font.color;
                                     columnStyles["background-color"] = subCellStyle.backgroundColor;
                                 } else {
@@ -1977,10 +1992,17 @@ function viewer(zs) {
                             columnAttributes["data-key"] = 'dataAxis';
                             columnAttributes["data-rowIdx"] = rowIdx;
                             columnStyles = {};
-                            // columnStyles["left"] = frozenColumnStylesLeft + "px";
-                            // columnStyles["width"] = leafFrozenColWidth[Viewer.FROZEN_COLUMN_ADDITIONAL_KEY + this._settings.yProperties.length] + "px";
-                            columnStyles["left"] = (yPropMax * frozenCellWidth) + "px";
-                            columnStyles["width"] = frozenCellWidth + "px";
+
+                            //TODO - harry
+                            // 20210330 : Harry : Leaf Frozen Column Width Setting For Z Axis - S
+                            columnStyles["width"] = leafFrozenColWidth[Viewer.FROZEN_COLUMN_ADDITIONAL_KEY + this._settings.yProperties.length] + "px";
+                            // 20210330 : Harry : Leaf Frozen Column Width Setting For Z Axis - E
+
+                            //TODO - harry
+                            // 20210330 : Harry : Leaf Frozen Column Left Setting For Z Axis - S
+                            columnStyles["left"] = this._settings.yProperties.reduce((acc, item) => { return acc + Number(leafFrozenColWidth[item.name]) }, 0) + "px";
+                            // 20210330 : Harry : Leaf Frozen Column Left Setting For Z Axis - E
+
                             columnStyles["height"] = cellHeight + "px";
                             // columnStyles["line-height"] = this.getLineHeightForValign( this._settings.header.align, cellHeight, 1 ) + "px !important";
                             columnStyles["color"] = this._settings.header.font.color;
@@ -2967,7 +2989,13 @@ function viewer(zs) {
 
                         columnStyles = {};
                         columnStyles["left"] = frozenColumnStylesLeft + "px";
-                        columnStyles["width"] = leafFrozenColWidth[propertyName] + "px";
+
+                        //TODO - harry
+                        // 20210330 : Harry : Leaf Frozen Column Width Setting - S
+                        frozenCellWidth = leafFrozenColWidth[propertyName];
+                        columnStyles["width"] = frozenCellWidth + "px";
+                        // 20210330 : Harry : Leaf Frozen Column Width Setting - E
+
                         let tempCellHeight = rowspan * cellHeight;
                         columnStyles["height"] = tempCellHeight + "px";
                         // columnStyles["line-height"] = this.getLineHeightForValign( this._settings.header.align, tempCellHeight, rowspan ) + "px !important";
@@ -2976,7 +3004,13 @@ function viewer(zs) {
                         if ('TOTAL' === value) {
                             value = !this._settings.calcCellStyle.label || '' === this._settings.calcCellStyle.label
                                 ? pivotStyle.summaryLabel[this._settings.calcCellStyle.aggregationType] : this._settings.calcCellStyle.label;
-                            columnStyles["width"] = (frozenCellWidth * this._settings.yProperties.length) + "px";
+
+                            //TODO - harry
+                            // 20210330 : Harry : Leaf Frozen Column Width Setting For Total - S
+                            // columnStyles["width"] = (frozenCellWidth * this._settings.yProperties.length) + "px";
+                            columnStyles["width"] = this._settings.yProperties.reduce((acc, item) => { return acc + Number(leafFrozenColWidth[item.name]) }, 0) + "px";
+                            // 20210330 : Harry : Leaf Frozen Column Width Setting For Total - E
+
                             columnStyles["color"] = this._settings.calcCellStyle.font.color;
                             columnStyles["background-color"] = this._settings.calcCellStyle.backgroundColor;
                         } else if ('SUB-TOTAL' === value) {
@@ -2999,6 +3033,7 @@ function viewer(zs) {
                         html.push("</div>");
 
                         frozenColumnStylesLeft += leafFrozenColWidth[propertyName];
+
                         // 20210323 : Harry : calculatedColumns Setting - S
                         if (this._settings.showCalculatedColumnStyle && (ypi == this._settings.yProperties.length - 1) && value
                             && !calculatedColumns.filter(item => item.summaryMapKey === arrVals.concat([value]).join("||")).length) {
