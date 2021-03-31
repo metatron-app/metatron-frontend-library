@@ -1459,21 +1459,29 @@ function viewer(zs) {
             // xProp의 이름에 대한 cnt, 원본보기일때에는 title (COLUMNS)을 표시하지않으므로 0으로 설정
             const xPropTitleCnt = this._isPivot ? 1 : 0;
             let frozenHeightCnt = xPropTitleCnt + xPropMax; // #20161230-01 : 값 필드 표시 방향 선택 기능
-            let frozenWidth = frozenCellWidth * (yPropMax + isShowDataKey);
             // let frozenHeight = cellHeight * frozenHeightCnt;
+
+            // 20210331 : Harry : Frozen Width Setting - S
+            // let frozenWidth = frozenCellWidth * (yPropMax + isShowDataKey);
+            let frozenWidth = (Object.keys(leafFrozenColWidth).length) ? this._settings.yProperties.reduce((acc, item) => { return acc + Number(leafFrozenColWidth[item.name]) }, 0) : frozenCellWidth * (yPropMax + isShowDataKey);
+            // 20210331 : Harry : Frozen Width Setting - E
 
             // 전체 컨텐츠 너비 설정 - Start
             const widthKeys = Object.keys(this._leafColumnWidth);
             if (0 < widthKeys.length) {
+                // 20210331 : Harry : Content Size Width Setting - E
                 let contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
-                // let currentGridWidth = this._elementBody.style.width.replace(/px/gi, '') * 1 - frozenWidth;
-                // if (this.IS_FILL_WIDTH && contentSizeWidth < currentGridWidth) {
-                //     let cellDiffWidth = (currentGridWidth - contentSizeWidth) / widthKeys.length;
-                //     widthKeys.forEach(item => this._leafColumnWidth[item] = this._leafColumnWidth[item] + cellDiffWidth);
-                // } else {
+                let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - frozenWidth;
+
+                if (this.IS_FILL_WIDTH && contentSizeWidth < currentGridWidth) {
+                    let cellDiffWidth = (currentGridWidth - contentSizeWidth) / widthKeys.length;
+                    widthKeys.forEach(item => this._leafColumnWidth[item] = this._leafColumnWidth[item] + cellDiffWidth);
+                    contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
+                }
+                // 20210331 : Harry : Content Size Width Setting - E
+
                 this._elementHeadWrap.style.width = contentSizeWidth + "px";
                 this._elementBodyWrap.style.width = contentSizeWidth + "px";
-                // }
             } else if (this.IS_FILL_WIDTH) {
                 // this._leafColumnWidth = {}; // 초기화
                 let cnt = this._xItems.length;
@@ -2447,21 +2455,30 @@ function viewer(zs) {
             let frozenHeightCnt = xPropMax + isShowDataKey; // #20181116-01 : 상단 공백 타이틀 제거
             frozenHeightCnt = frozenHeightCnt + (0 < xPropMax || 0 < yPropMax ? 1 : 0); // #20181116-01 : 상단 공백 타이틀 제거
             // let frozenHeightCnt = (1 + xPropMax + isShowDataKey);	// #20161230-01 : 값 필드 표시 방향 선택 기능
-            let frozenWidth = frozenCellWidth * yPropMax;
+
+            // 20210331 : Harry : Frozen Width Setting - S
+            // let frozenWidth = frozenCellWidth * yPropMax;
+            let frozenWidth = (Object.keys(leafFrozenColWidth).length) ? this._settings.yProperties.reduce((acc, item) => { return acc + Number(leafFrozenColWidth[item.name]) }, 0) : frozenCellWidth * yPropMax;
+            // 20210331 : Harry : Frozen Width Setting - E
+
             let calculatedColumnWidth = this._settings.showCalculatedColumnStyle ? Viewer.SHOW_CALCULATED_COLUMN_WIDTH : 0;
 
             // 전체 컨텐츠 너비 설정 - Start
             const widthKeys = Object.keys(this._leafColumnWidth);
             if (0 < widthKeys.length) {
+                // 20210331 : Harry : Content Size Width Setting - E
                 let contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
-                // let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - frozenWidth;
-                // if (this.IS_FILL_WIDTH && contentSizeWidth < currentGridWidth) {
-                //     // let cellDiffWidth = (currentGridWidth - contentSizeWidth) / widthKeys.length;
-                //     // widthKeys.forEach(item => this._leafColumnWidth[item] = this._leafColumnWidth[item] + cellDiffWidth);
-                // } else {
+                let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - frozenWidth;
+
+                if (this.IS_FILL_WIDTH && contentSizeWidth < currentGridWidth) {
+                    let cellDiffWidth = (currentGridWidth - contentSizeWidth) / widthKeys.length;
+                    widthKeys.forEach(item => this._leafColumnWidth[item] = this._leafColumnWidth[item] + cellDiffWidth);
+                    contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
+                }
+                // 20210331 : Harry : Content Size Width Setting - E
+
                 this._elementHeadWrap.style.width = contentSizeWidth + "px";
                 this._elementBodyWrap.style.width = contentSizeWidth + "px";
-                // }
             } else if (this.IS_FILL_WIDTH) {
                 // this._leafColumnWidth = {}; // 초기화
                 const cnt = this._xItems.length * zPropMax;
