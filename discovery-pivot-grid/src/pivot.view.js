@@ -1078,12 +1078,13 @@ function viewer(zs) {
                 .on('drag', resizeHandleSelector, function (event) {
                     event.stopPropagation();
 
+                    // 20210331 : Harry : Resize Column Width - S
                     let oldWidth = (event.target.parentElement.style.width.replace(/px/gi, '') * 1);
-                    if (objViewer.isIE) {
-                        event.target.parentElement.style.width = oldWidth + event.originalEvent.offsetX + 'px';
-                    } else {
-                        event.target.parentElement.style.width = oldWidth + event.originalEvent.layerX + 'px';
+                    let dragWidth = oldWidth + ( objViewer.isIE ? event.originalEvent.offsetX : event.originalEvent.layerX );
+                    if (dragWidth) {
+                        event.target.parentElement.style.width = dragWidth + 'px';
                     }
+                    // 20210331 : Harry : Resize Column Width - E
                 })
                 .on('dragend', resizeHandleSelector, function (event) {
                     event.stopPropagation();
@@ -1897,7 +1898,6 @@ function viewer(zs) {
                                 columnStyles = {};
                                 columnStyles["left"] = frozenColumnStylesLeft + "px";
 
-                                //TODO - harry
                                 // 20210330 : Harry : Leaf Frozen Column Width Setting - S
                                 frozenCellWidth = leafFrozenColWidth[propertyName];
                                 columnStyles["width"] = frozenCellWidth + "px";
@@ -1912,7 +1912,6 @@ function viewer(zs) {
                                     value = !this._settings.calcCellStyle.label || '' === this._settings.calcCellStyle.label
                                         ? pivotStyle.summaryLabel[this._settings.calcCellStyle.aggregationType] : this._settings.calcCellStyle.label;
 
-                                    //TODO - harry
                                     // 20210330 : Harry : Leaf Frozen Column Width Setting For Total - S
                                     // columnStyles["width"] = (frozenCellWidth * this._settings.yProperties.length) + "px";
                                     columnStyles["width"] = this._settings.yProperties.reduce((acc, item) => { return acc + Number(leafFrozenColWidth[item.name]) }, 0) + "px";
@@ -1927,7 +1926,6 @@ function viewer(zs) {
                                     value = !subCellStyle.label || '' === subCellStyle.label
                                         ? pivotStyle.subSummaryLabel[subCellStyle.aggregationType] : subCellStyle.label;
 
-                                    //TODO - harry
                                     // 20210330 : Harry : Leaf Frozen Column Width Setting For Sub Total - S
                                     // columnStyles["width"] = ((yPropMax - ypi) * frozenCellWidth) + "px";
                                     columnStyles["width"] = this._settings.yProperties.reduce((acc, item, idx) => {
@@ -1993,12 +1991,10 @@ function viewer(zs) {
                             columnAttributes["data-rowIdx"] = rowIdx;
                             columnStyles = {};
 
-                            //TODO - harry
                             // 20210330 : Harry : Leaf Frozen Column Width Setting For Z Axis - S
                             columnStyles["width"] = leafFrozenColWidth[Viewer.FROZEN_COLUMN_ADDITIONAL_KEY + this._settings.yProperties.length] + "px";
                             // 20210330 : Harry : Leaf Frozen Column Width Setting For Z Axis - E
 
-                            //TODO - harry
                             // 20210330 : Harry : Leaf Frozen Column Left Setting For Z Axis - S
                             columnStyles["left"] = this._settings.yProperties.reduce((acc, item) => { return acc + Number(leafFrozenColWidth[item.name]) }, 0) + "px";
                             // 20210330 : Harry : Leaf Frozen Column Left Setting For Z Axis - E
@@ -2990,7 +2986,6 @@ function viewer(zs) {
                         columnStyles = {};
                         columnStyles["left"] = frozenColumnStylesLeft + "px";
 
-                        //TODO - harry
                         // 20210330 : Harry : Leaf Frozen Column Width Setting - S
                         frozenCellWidth = leafFrozenColWidth[propertyName];
                         columnStyles["width"] = frozenCellWidth + "px";
@@ -3005,7 +3000,6 @@ function viewer(zs) {
                             value = !this._settings.calcCellStyle.label || '' === this._settings.calcCellStyle.label
                                 ? pivotStyle.summaryLabel[this._settings.calcCellStyle.aggregationType] : this._settings.calcCellStyle.label;
 
-                            //TODO - harry
                             // 20210330 : Harry : Leaf Frozen Column Width Setting For Total - S
                             // columnStyles["width"] = (frozenCellWidth * this._settings.yProperties.length) + "px";
                             columnStyles["width"] = this._settings.yProperties.reduce((acc, item) => { return acc + Number(leafFrozenColWidth[item.name]) }, 0) + "px";
