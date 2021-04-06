@@ -111,19 +111,31 @@ function viewer(zs) {
         }   // function - getCalcKey
 
         /**
-         * yItem 으로 부터 부분합 관련 필드명(key)를 얻는다. ( 없을 시 undefined )
+         * xItem/yItem 으로 부터 부분합 관련 필드명(key)를 얻는다. ( 없을 시 undefined )
          * @param yItem
          * @return {undefined}
          */
-        function getSubCalcKey(yItem) {
-            let subCalcKey = undefined;
-            for (let key in yItem) {
-                if (yItem.hasOwnProperty(key) && 'SUB-TOTAL' === yItem[key]) {
-                    subCalcKey = key;
-                    break;
+        function getSubCalcKey(item, dataColumnMode) {
+            // 20210406 : Harry : Get subCalcKey By Data Column Mode - S
+            if (dataColumnMode === 'TOP') {
+                let subCalcKeyArr = [];
+                for (let key in item) {
+                    if (item.hasOwnProperty(key) && 'SUB-TOTAL' === item[key]) {
+                        subCalcKeyArr.push(key);
+                    }
                 }
+                return subCalcKeyArr;
+            } else {
+                let subCalcKey = undefined;
+                for (let key in item) {
+                    if (item.hasOwnProperty(key) && 'SUB-TOTAL' === item[key]) {
+                        subCalcKey = key;
+                        break;
+                    }
+                }
+                return subCalcKey;
             }
-            return subCalcKey;
+            // 20210406 : Harry : Get subCalcKey By Data Column Mode - E
         }   // function - getSubCalcKey
 
         /**
@@ -328,8 +340,7 @@ function viewer(zs) {
                             // console.info( '%c>>>>>> rowInfo / prevRowInfo', 'color:#0000FF;', rowInfo, prevRowInfo );
                             for (let idx2 = subCalc.length - 1; idx2 >= 0; idx2--) {
                                 // console.info( '>>>>> idx : %s, prevRowInfo : %s, rowInfo : %s, T/F : %s', idx2, prevRowInfo.slice(0, idx2).join('>'), rowInfo.slice(0, idx2).join('>'), prevRowInfo.slice(0, idx2).join('>') !== rowInfo.slice(0, idx2).join('>') );
-                                if (subCalc[idx2]
-                                    && prevRowInfo.slice(0, idx2).join('>') !== rowInfo.slice(0, idx2).join('>')) {
+                                if (subCalc[idx2] && prevRowInfo.slice(0, idx2).join('>') !== rowInfo.slice(0, idx2).join('>')) {
                                     // console.info( '%c>>>>> create subtotal', 'color:#FFFFFF;background-color:#0000FF;' );
                                     // sub-total 항목을 넣어준다.
                                     const frontArr = rowArr.slice(0, idx1);
@@ -399,8 +410,7 @@ function viewer(zs) {
                         });
                         // Column 정보에 Sub Total 에 따른 category 정보 추가 - End
                     }
-                    //TODO - harry
-                    // 20210330 : Harry : Vertical Sub Total Setting - S
+                    // 20210406 : Harry : Vertical Sub Total Setting - S
                     else if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP) {
 
                         // Row 정보에 Sub Total 추가 - Start
@@ -408,6 +418,13 @@ function viewer(zs) {
 
                         let rowArr = items.rows.map(row => row.split('―'));
                         let colArr = items.columns;
+                        if (colArr.filter(colInfo => colInfo.name.indexOf('TOTAL') > 0).length > 0) {
+                            colArr = colArr.filter(colInfo => colInfo.name.indexOf('TOTAL') < 0);
+                            colArr.forEach(colInfo => {
+                                colInfo.name = colInfo.name.split(common.__fieldSeparator).join('―');
+                            });
+                        }
+
                         let prevColInfo = colArr[0];
 
                         for (let idx1 = 0, nMax = colArr.length; idx1 < nMax; idx1++) {
@@ -418,20 +435,32 @@ function viewer(zs) {
                             // console.info( '%c>>>>>> colInfo / prevColInfo', 'color:#0000FF;', colInfo, prevColInfo );
                             for (let idx2 = subCalc.length - 1; idx2 >= 0; idx2--) {
                                 // console.info( '>>>>> idx : %s, prevColInfo : %s, colInfo : %s, T/F : %s', idx2, prevColInfo.name.split('―').slice(0, idx2).join('>'), colInfo.name.split('―').slice(0, idx2).join('>'), prevColInfo.name.split('―').slice(0, idx2).join('>') !== colInfo.name.split('―').slice(0, idx2).join('>') );
-                                if (subCalc[idx2]
-                                    && prevColInfo.name.split('―').slice(0, idx2).join('>') !== colInfo.name.split('―').slice(0, idx2).join('>')) {
+                                if (subCalc[idx2] && prevColInfo.name.split('―').slice(0, idx2).join('>') !== colInfo.name.split('―').slice(0, idx2).join('>')) {
                                     // console.info( '%c>>>>> create subtotal', 'color:#FFFFFF;background-color:#0000FF;' );
                                     // sub-total 항목을 넣어준다.
                                     const frontArr = colArr.slice(0, idx1);
                                     const endArr = colArr.slice(idx1, colArr.length);
 
-                                    const subTotalItem = _.cloneDeep(frontArr.slice(-1)[0]);
-                                    subTotalItem.name = prevColInfo.name.split('―').slice(0, idx2).join('―') + '―SUB-TOTAL―' + subTotalItem.name.split('―').slice(-1).join('');
-                                    subTotalItem.value.fill(null);
-                                    subTotalItem.seriesValue.fill(null);
+                                    for (let idx3 = 0; idx3 < this._settings.zProperties.length; idx3++) {
+                                        const subTotalItem = _.cloneDeep(frontArr.slice(-1)[0]);
 
-                                    frontArr.push(subTotalItem);
+                                        // sub-total name setting
+                                        subTotalItem.name = prevColInfo.name.split('―').slice(0, idx2).join('―');
+
+                                        for(let idx4 = 0; idx4 < this._settings.xProperties.length - idx2; idx4++) {
+                                            subTotalItem.name += '―SUB-TOTAL';
+                                        }
+
+                                        subTotalItem.name += '―' + this._settings.zProperties[idx3].name;
+
+                                        // sub-total value initialize
+                                        subTotalItem.value.fill(null);
+                                        subTotalItem.seriesValue.fill(null);
+                                        frontArr.push(subTotalItem);
+                                    }
+
                                     colArr = frontArr.concat(endArr);
+
                                     // sub total 이 추가되면서 변경되는 index 번호를 재조정 해준다.
                                     if (nMax !== colArr.length) {
                                         idx1 = idx1 + (colArr.length - nMax);
@@ -442,14 +471,29 @@ function viewer(zs) {
                             prevColInfo = colArr[idx1];
                         }
 
-                        if (prevColInfo.name.indexOf('SUB-TOTAL') < 0) {
-                            // 마지막 열 SUB-TOTAL 추가
-                            const subTotalItem = _.cloneDeep(prevColInfo);
-                            // subTotalItem.name = prevColInfo.name.split('―').slice(0, this._settings.xProperties.length - 1).join('―') + '―총합―' + prevColInfo.name.split('―').slice(-1).join('');
-                            subTotalItem.name = prevColInfo.name.split('―').slice(0, this._settings.xProperties.length - 1).join('―') + '―SUB-TOTAL―' + prevColInfo.name.split('―').slice(-1).join('');
-                            subTotalItem.value.fill(null);
-                            subTotalItem.seriesValue.fill(null);
-                            colArr.push(subTotalItem);
+                        // 마지막 Row Sub Total 추가
+                        if (prevColInfo.name.indexOf('TOTAL') < 0) {
+                            for (let idx1 = subCalc.length - 1; idx1 > 0; idx1--) {
+                                if (subCalc[idx1]) {
+                                    for (let idx2 = 0; idx2 < this._settings.zProperties.length; idx2++) {
+                                        const subTotalItem = _.cloneDeep(prevColInfo);
+
+                                        // sub-total name setting
+                                        subTotalItem.name = prevColInfo.name.split('―').slice(0, idx1).join('―');
+
+                                        for(let idx3 = 0; idx3 < this._settings.xProperties.length - idx1; idx3++) {
+                                            subTotalItem.name += '―SUB-TOTAL';
+                                        }
+
+                                        subTotalItem.name += '―' + this._settings.zProperties[idx2].name;
+
+                                        // sub-total value initialize
+                                        subTotalItem.value.fill(null);
+                                        subTotalItem.seriesValue.fill(null);
+                                        colArr.push(subTotalItem);
+                                    }
+                                }
+                            }
                         }
 
                         items.rows = rowArr.map(rowInfo => rowInfo.join(common.__fieldSeparator));
@@ -461,8 +505,9 @@ function viewer(zs) {
 
                                 // 값 목록 추출
                                 const splitRow = col.name.split('―');
-                                const subTotalPrefix = splitRow.slice(0, this._settings.xProperties.length - 1).join('―');
-                                const subTotalColArr = items.columns.filter(item => item && item.name.indexOf(subTotalPrefix) > -1 && item.name.indexOf('SUB-TOTAL') < 0);
+                                const subTotalPrefix = splitRow.slice(0, splitRow.indexOf('SUB-TOTAL')).join('―');
+                                const subTotalZProp = splitRow.slice(-1).join('');
+                                const subTotalColArr = items.columns.filter(item => item && item.name.indexOf(subTotalPrefix) > -1 && item.name.indexOf(subTotalZProp) > -1 && item.name.indexOf('SUB-TOTAL') < 0);
 
                                 // column(vertical) sub total summary value 정보 추가
                                 col.value.forEach((valueItem, valueIdx) => {
@@ -478,7 +523,7 @@ function viewer(zs) {
                         });
                         // Column 정보에 Sub Total 에 따른 category 정보 추가 - End
                     }
-                    // 20210330 : Harry : Vertical Sub Total Setting - E
+                    // 20210406 : Harry : Vertical Sub Total Setting - E
                 } else {
                     items.rows = items.rows.map(row => row.split('―').join(common.__fieldSeparator));
                 }
@@ -582,7 +627,7 @@ function viewer(zs) {
 
                     //20170811 Dolkkok - 피봇데이터기반으로 변경
 
-                    if (objViewer._settings.showCalculatedColumnStyle) {
+                    if (objViewer._settings.showCalculatedColumnStyle && column.name.indexOf('SUB-TOTAL') < 0) {
                         // 20210322 : Harry : Add Calculated Column To summaryMap - S
                         // 연산열 대상 데이터를 summaryMap에 추가
                         Viewer.prototype.appendCalculatedColumnDataToSummaryMap(column, objViewer.summaryMap, objViewer._settings.dataColumnMode);
@@ -645,6 +690,13 @@ function viewer(zs) {
 
                         for (let idx = 0, nMax = zProps.length; idx < nMax; idx++) {
                             let itemKey = zProps[idx].name;
+
+                            // 20210406 : Harry : Validate Column Index - S
+                            if (items.columns.length <= (columnIdx + idx)) {
+                                return;
+                            }
+                            // 20210406 : Harry : Validate Column Index - E
+
                             let itemValue = items.columns[columnIdx + idx].value[valueIdx];
                             item[itemKey] = !!itemValue ? itemValue : null;
 
@@ -660,52 +712,52 @@ function viewer(zs) {
                             objViewer._xItems.push(xGroup.item = item);
                         }
 
-                    // 20210226 : Harry : _yItems(Pivot) Setting For Sorting - S
-                    if (!yGroup.item) {
-                        if (objViewer._settings.yAxisSort) {
-                            let arrSortColumnParentKeys = objViewer._settings.sortColumnParentKeys.split(common.__fieldSeparator);
-                            let arrSortColumnParentVals = objViewer._settings.sortColumnParentVals.split(common.__fieldSeparator);
+                        // 20210226 : Harry : _yItems(Pivot) Setting For Sorting - S
+                        if (!yGroup.item) {
+                            if (objViewer._settings.yAxisSort) {
+                                let arrSortColumnParentKeys = objViewer._settings.sortColumnParentKeys.split(common.__fieldSeparator);
+                                let arrSortColumnParentVals = objViewer._settings.sortColumnParentVals.split(common.__fieldSeparator);
 
-                            // x축 dimension 유무에 따른 분기
-                            if (arrSortColumnParentKeys.join('').trim().length > 0) {
-                                let isYItem = false;
-                                for (let key of arrSortColumnParentKeys) {
-                                    isYItem = ( item.hasOwnProperty(key) && arrSortColumnParentVals.indexOf(item[key]) > -1 );
-                                    if (!isYItem) {
-                                        break;
+                                // x축 dimension 유무에 따른 분기
+                                if (arrSortColumnParentKeys.join('').trim().length > 0) {
+                                    let isYItem = false;
+                                    for (let key of arrSortColumnParentKeys) {
+                                        isYItem = ( item.hasOwnProperty(key) && arrSortColumnParentVals.indexOf(item[key]) > -1 );
+                                        if (!isYItem) {
+                                            break;
+                                        }
                                     }
-                                }
-                                if (isYItem) {
+                                    if (isYItem) {
+                                        objViewer._yItems.push(yGroup.item = item);
+                                    }
+                                } else {
                                     objViewer._yItems.push(yGroup.item = item);
                                 }
                             } else {
                                 objViewer._yItems.push(yGroup.item = item);
                             }
-                        } else {
-                            objViewer._yItems.push(yGroup.item = item);
                         }
-                    }
-                    // 20210226 : Harry : _yItems(Pivot) Setting For Sorting - E
+                        // 20210226 : Harry : _yItems(Pivot) Setting For Sorting - E
 
-                    objViewer._items.push(item);
+                        objViewer._items.push(item);
 
-                    context["item"] = item;
+                        context["item"] = item;
 
-                    // 데이터 임계 정보 설정 - Start
-                    if (showColorStep) {
-                        for (let key in item) {
-                            let criteria = objViewer._dataCriteria[key];
-                            if (criteria && item.hasOwnProperty(key)) {
-                                let itemData = item[key];
-                                criteria.min = (itemData < criteria.min) ? itemData : criteria.min;
-                                criteria.max = (itemData > criteria.max) ? itemData : criteria.max;
+                        // 데이터 임계 정보 설정 - Start
+                        if (showColorStep) {
+                            for (let key in item) {
+                                let criteria = objViewer._dataCriteria[key];
+                                if (criteria && item.hasOwnProperty(key)) {
+                                    let itemData = item[key];
+                                    criteria.min = (itemData < criteria.min) ? itemData : criteria.min;
+                                    criteria.max = (itemData > criteria.max) ? itemData : criteria.max;
+                                }
                             }
-                        }
-                    } // if - showColorStep
-                    // 데이터 임계 정보 설정 - End
+                        } // if - showColorStep
+                        // 데이터 임계 정보 설정 - End
+                    });
+                    //20170811 Dolkkok - 피봇데이터기반으로 변경
                 });
-                //20170811 Dolkkok - 피봇데이터기반으로 변경
-            });
             }
             // 원본 데이터 형태일 경우
             // 20171130 taeho - 피봇 / 원본 데이터형태 모두 지원하도록 변경
@@ -1838,7 +1890,7 @@ function viewer(zs) {
                         rowAttributes["class"] = pivotStyle.cssClass.headRow;
 
                         let yItem = this._yItems[yii];
-                        let subCalcKey = getSubCalcKey(yItem);
+                        let subCalcKey = getSubCalcKey(yItem, Viewer.DATA_COL_MODE.LEFT);
                         if (this._settings.calcCellStyle && undefined !== getCalcKey(yItem)) {
                             rowAttributes["class"] = this.addClassFontStyle(rowAttributes["class"], this._settings.calcCellStyle.font);
                             rowAttributes["class"] = this.addClassTextAlign(rowAttributes["class"], this._settings.calcCellStyle.align, 'CENTER');
@@ -2101,7 +2153,7 @@ function viewer(zs) {
                 let stepRangeColors = this._settings.body.color && this._settings.body.color.stepRangeColors ? this._settings.body.color.stepRangeColors : null;
                 for (let yii = range.top; yii <= range.bottom; yii++) {
                     let yItem = this._yItems[yii];
-                    let subCalcKey = getSubCalcKey(yItem);
+                    let subCalcKey = getSubCalcKey(yItem, Viewer.DATA_COL_MODE.LEFT);
                     let isCalcRow = (this._settings.calcCellStyle && undefined !== getCalcKey(yItem));
 
                     for (let zpi = 0; zpi < zPropMax; zpi++) {
@@ -2704,16 +2756,50 @@ function viewer(zs) {
                             arrKeys.push(this._settings.xProperties[idx].name);
                             arrVals.push(xItem[this._settings.xProperties[idx].name]);
                         } // end for - xProperties
+
+                        // 20210406 : Harry : Validate Child Sub Total Column - S
+                        // cell 병합을 위해 같은 열의 하위 sub-total 컬럼은 skip
+                        if (arrVals.indexOf('SUB-TOTAL') > -1) {
+                            continue;
+                        }
+                        // 20210406 : Harry : Validate Child Sub Total Column - E
+
                         if (0 < arrKeys.length) {
                             columnAttributes["data-parent-keys"] = arrKeys.join("||");
                             columnAttributes["data-parent-vals"] = arrVals.join("||");
                         }
                         // #20161229-01 : 축 선택 시 상위 축 정보 포함 제공 - End
 
+                        // 20210406 : Harry : Set subCalcKey - S
+                        let subCalcKey = '';
+                        let subCalcKeyArr = getSubCalcKey(xItem, Viewer.DATA_COL_MODE.TOP);
+                        for (let idx = 0; idx < this._settings.xProperties.length; idx++) {
+                            if (subCalcKeyArr.indexOf(this._settings.xProperties[idx].name) > -1) {
+                                subCalcKey = this._settings.xProperties[idx].name;
+                                break;
+                            }
+                        }
+                        // 20210406 : Harry : Set subCalcKey - E
+
                         columnStyles = {};
-                        columnStyles["height"] = cellHeight + "px";
-                        columnStyles["color"] = this._settings.header.font.color;
-                        columnStyles["background-color"] = this._settings.header.backgroundColor;
+
+                        // 20210406 : Harry : Set Column Attributes & Styles - S
+                        if (value === 'SUB-TOTAL' && this._settings.subCalcCellStyle && subCalcKey !== '') {
+                            const subCalcCellStyle = this._settings.subCalcCellStyle[subCalcKey.toLowerCase()];
+                            value = !subCalcCellStyle.label || '' === subCalcCellStyle.label
+                                ? pivotStyle.subSummaryLabel[subCalcCellStyle.aggregationType] : subCalcCellStyle.label;
+                            columnAttributes["class"] = this.addClassFontStyle(columnAttributes["class"], subCalcCellStyle.font);
+                            columnAttributes["class"] = this.addClassTextAlign(columnAttributes["class"], subCalcCellStyle.align, 'CENTER');
+                            columnStyles["color"] = subCalcCellStyle.font.color;
+                            columnStyles["background-color"] = subCalcCellStyle.backgroundColor;
+                            columnStyles["height"] = (this._settings.xProperties.length - arrVals.length) * cellHeight + "px";
+                        } else {
+                            columnStyles["color"] = this._settings.header.font.color;
+                            columnStyles["background-color"] = this._settings.header.backgroundColor;
+                            columnStyles["height"] = cellHeight + "px";
+                        }
+                        // 20210406 : Harry : Set Column Attributes & Styles - E
+
                         // 20180807 : Koo : Resize Column - S
                         // columnStyles["left"] = (zPropMax * xii * cellWidth) + "px";
                         // columnStyles["width"] = (colspan * zPropMax * cellWidth) + "px";
@@ -2795,7 +2881,6 @@ function viewer(zs) {
                         }
                         // 20180807 : Koo : Resize Column - E
                         html.push("</div>");
-
                     } // end for - xii
                     html.push("</div>");
                 } // end for - xpi
@@ -2939,7 +3024,7 @@ function viewer(zs) {
                     rowAttributes["class"] = pivotStyle.cssClass.headRow;
 
                     let yItem = this._yItems[yii];
-                    let subCalcKey = getSubCalcKey(yItem);
+                    let subCalcKey = getSubCalcKey(yItem, Viewer.DATA_COL_MODE.LEFT);
                     if (this._settings.calcCellStyle && undefined !== getCalcKey(yItem)) {
                         rowAttributes["class"] = this.addClassFontStyle(rowAttributes["class"], this._settings.calcCellStyle.font);
                         rowAttributes["class"] = this.addClassTextAlign(rowAttributes["class"], this._settings.calcCellStyle.align, 'CENTER');
@@ -3124,7 +3209,7 @@ function viewer(zs) {
                     rowAttributes["data-rowIdx"] = rowIdx;
                     rowAttributes["class"] = pivotStyle.cssClass.bodyRow + (index % 2 === 0 ? " odd" : "");
 
-                    let subCalcKey = getSubCalcKey(yItem);
+                    let subCalcKey = getSubCalcKey(yItem, Viewer.DATA_COL_MODE.LEFT);
                     if (this._settings.calcCellStyle && undefined !== getCalcKey(yItem)) {
                         rowAttributes["class"] = this.addClassFontStyle(rowAttributes["class"], this._settings.calcCellStyle.font);
                         rowAttributes["class"] = this.addClassTextAlign(rowAttributes["class"], this._settings.calcCellStyle.align);
