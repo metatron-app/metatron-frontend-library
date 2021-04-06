@@ -298,20 +298,22 @@ function viewer(zs) {
             this._bodyCellSelectInfo = {};
             // Add Property by eltriny - end
 
-            // 20210309 : Harry : Leaf Column Width - S
+            // 20210406 : Harry : Leaf Column Width - S
             if (Object.keys(this._settings.columnWidth).length > 0 ) {
                 let objLeafColumnWidth = this._settings.columnWidth;
                 let objLeafColumnWidthKeys = Object.keys(objLeafColumnWidth);
 
                 if (objLeafColumnWidthKeys.length > 0) {
                     objLeafColumnWidthKeys.forEach(key => {
-                        if (key) {
+                        if (key && this._settings.yProperties.findIndex(item => item.name === key) < 0) {
                             this._leafColumnWidth[key] = objLeafColumnWidth[key];
+                        } else if (key && this._settings.yProperties.findIndex(item => item.name === key) > -1) {
+                            this._leafFrozenColumnWidth[key] = objLeafColumnWidth[key];
                         }
                     });
                 }
             }
-            // 20210309 : Harry : Leaf Column Width - E
+            // 20210406 : Harry : Leaf Column Width - E
 
             // 데이터 정리 - Start
             if (items.rows && 0 < items.rows.length) {
@@ -1656,7 +1658,7 @@ function viewer(zs) {
 
                         html.push("</div>");
 
-                        frozenColumnStyleLeft += frozenColWidth;
+                        frozenColumnStyleLeft += Number(frozenColWidth);
                     }
                     html.push("</div>");
                 }
@@ -1922,7 +1924,7 @@ function viewer(zs) {
                                 // Add by burgerboy2
                                 // #20160220-01 : 스크롤시 디자인 깨지는 현상 수정
                                 if (index > range.top && this._yItems[yii - 1] && predicate(this._yItems[yii - 1], yItem, ypi) && html.indexOf(value) > -1) {
-                                    frozenColumnStylesLeft += leafFrozenColWidth[propertyName];
+                                    frozenColumnStylesLeft += Number(leafFrozenColWidth[propertyName]);
                                     continue;
                                 }
                                 for (let i = yii + 1; i < this._yItems.length; i++) {
@@ -2005,7 +2007,7 @@ function viewer(zs) {
                                 html.push(getDisplayValue(value));
                                 html.push("</div>");
 
-                                frozenColumnStylesLeft += leafFrozenColWidth[propertyName];
+                                frozenColumnStylesLeft += Number(leafFrozenColWidth[propertyName]);
 
                                 // 20210319 : Harry : calculatedColumns Setting - S
                                 // zpi가 0인 경우에 대한 calculatedColumns[] 열 합계 추가
@@ -2645,7 +2647,7 @@ function viewer(zs) {
 
                         html.push("</div>");
 
-                        frozenColumnStyleLeft += frozenColWidth;
+                        frozenColumnStyleLeft += Number(frozenColWidth);
                     }
                     html.push("</div>");
                 }
@@ -3054,7 +3056,7 @@ function viewer(zs) {
                         let value = common.format(yItem[propertyName], this._settings.yProperties[ypi].digits);
                         let rowspan = 1;
                         if (index > range.top && this._yItems[yii - 1] && predicate(this._yItems[yii - 1], yItem, ypi)) {
-                            frozenColumnStylesLeft += leafFrozenColWidth[propertyName];
+                            frozenColumnStylesLeft += Number(leafFrozenColWidth[propertyName]);
                             continue;
                         }
                         for (let i = yii + 1; i < this._yItems.length; i++) {
@@ -3128,7 +3130,7 @@ function viewer(zs) {
                         html.push(getDisplayValue(value));
                         html.push("</div>");
 
-                        frozenColumnStylesLeft += leafFrozenColWidth[propertyName];
+                        frozenColumnStylesLeft += Number(leafFrozenColWidth[propertyName]);
 
                         // 20210323 : Harry : calculatedColumns Setting - S
                         if (this._settings.showCalculatedColumnStyle && (ypi == this._settings.yProperties.length - 1) && value
@@ -4086,7 +4088,7 @@ function viewer(zs) {
             let _this2 = this;
             let frozenWidthWidthKeys = Object.keys(this._leafFrozenColumnWidth);
             let frozenWidth = frozenWidthWidthKeys.reduce(function (acc, item) {
-                return acc + _this2._leafFrozenColumnWidth[item];
+                return acc + Number(_this2._leafFrozenColumnWidth[item]);
             }, 0);
 
             this._elementHeadWrap.style.left = frozenWidth + "px";
@@ -4222,7 +4224,9 @@ function viewer(zs) {
          */
         Viewer.prototype.getLeafColumnWidth = function () {
             let objLeafColumnWidth = this._leafColumnWidth;
+            let objLeafFrozenColumnWidth = this._leafFrozenColumnWidth;
             let objLeafColumnWidthKeys = Object.keys(objLeafColumnWidth);
+            let objLeafFrozenColumnWidthKeys = Object.keys(objLeafFrozenColumnWidth);
             let objItem = {};
 
             if (objLeafColumnWidthKeys.length > 0) {
@@ -4232,6 +4236,15 @@ function viewer(zs) {
                    }
                 });
             }
+
+            if (objLeafFrozenColumnWidthKeys.length > 0) {
+                objLeafFrozenColumnWidthKeys.forEach(key => {
+                    if (key) {
+                        objItem[key] = objLeafFrozenColumnWidth[key];
+                    }
+                });
+            }
+
             return objItem;
         }; // func - getLeafColumnWidth
 
