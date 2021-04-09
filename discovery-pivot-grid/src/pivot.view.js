@@ -632,7 +632,7 @@ function viewer(zs) {
                     if (objViewer._settings.showCalculatedColumnStyle && column.name.indexOf('SUB-TOTAL') < 0) {
                         // 20210322 : Harry : Add Calculated Column To summaryMap - S
                         // 연산열 대상 데이터를 summaryMap에 추가
-                        Viewer.prototype.appendCalculatedColumnDataToSummaryMap(column, objViewer.summaryMap, objViewer._settings.dataColumnMode);
+                        Viewer.prototype.appendCalculatedColumnDataToSummaryMap(column, objViewer.summaryMap, objViewer._settings.zProperties);
                         // 20210322 : Harry : Add Calculated Column To summaryMap - E
                     }
 
@@ -701,13 +701,6 @@ function viewer(zs) {
 
                             let itemValue = items.columns[columnIdx + idx].value[valueIdx];
                             item[itemKey] = !!itemValue ? itemValue : null;
-
-                            // 요약 정보 생성
-                            let summaryKey = 0 < arrSummaryKeys.length ? arrSummaryKeys.join('||') + '||' + itemKey : itemKey;
-                            objViewer.summaryMap[summaryKey] || (objViewer.summaryMap[summaryKey] = []);
-                            if (itemValue) {
-                                objViewer.summaryMap[summaryKey].push(itemValue);
-                            }
                         }
 
                         if (!xGroup.item) {
@@ -1447,10 +1440,13 @@ function viewer(zs) {
             this._elementHeadFrozen.style.height = availableSizeHead.height - 1 + "px"; // line 표시를 위해 1px 빼줌
 
             if (this._settings.showCalculatedColumnStyle) {
-                this._elementHeadCalculatedColumn.style.width = Viewer.SHOW_CALCULATED_COLUMN_WIDTH + "px";
+                // 20210409 : Harry : Set Head Calculated Column - S
+                zPropCnt = zPropCnt ? zPropCnt : 1;
+                this._elementHeadCalculatedColumn.style.width = (Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropCnt) + "px";
                 this._elementHeadCalculatedColumn.style.height = availableSizeHead.height - 1 + "px";
-                this._elementBodyCalculatedColumn.style.width = Viewer.SHOW_CALCULATED_COLUMN_WIDTH + "px";
+                this._elementBodyCalculatedColumn.style.width = (Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropCnt) + "px";
                 this._elementBodyCalculatedColumn.style.height = availableSizeHead.height - 1 + "px";
+                // 20210409 : Harry : Set Head Calculated Column - E
             }
 
             this._elementBodyWrap.style.width = contentSize.width - frozenWidth + "px";
@@ -1669,13 +1665,12 @@ function viewer(zs) {
             if (this._settings.showCalculatedColumnStyle) {
                 // 연산 열 헤더 추가
                 html.length = 0;
-                {
-                    for (let xpi = 0; xpi < frozenHeightCnt; xpi++) {
-                        let showLabel = (xpi === xPropMax) ? true : false;
-                        this.appendHeadCalculatedColumnToHtml(xpi, cellHeight, showLabel, html);
-                    }
-                    this._elementHeadCalculatedColumn.innerHTML = html.join("");
+                // 20210409 : Harry : Set Head Calculated Column - S
+                for (let xpi = 0; xpi < frozenHeightCnt; xpi++) {
+                    this.appendHeadCalculatedColumnToHtml(xpi, cellHeight, html, frozenHeightCnt);
                 }
+                // 20210409 : Harry : Set Head Calculated Column - E
+                this._elementHeadCalculatedColumn.innerHTML = html.join("");
             }
 
             html.length = 0;
@@ -2134,7 +2129,8 @@ function viewer(zs) {
             if (this._settings.showCalculatedColumnStyle) {
                 // 연산 열 데이터 표시
                 html.length = 0;
-                if (this.summaryMap[Viewer.EMPTY_Y_AXIS_DIMENSION_KEY]) {
+                // 20210409 : Harry : Set Body Calculated Column - S
+                if (Object.keys(this.summaryMap).join('').indexOf(Viewer.EMPTY_Y_AXIS_DIMENSION_KEY) > -1) {
                     // Y축 차원이 존재하지 않는 경우
                     this.appendBodyCalculatedColumnToHtml(Viewer.EMPTY_Y_AXIS_DIMENSION_KEY, 0, cellHeight, html);
                 } else {
@@ -2142,6 +2138,7 @@ function viewer(zs) {
                         this.appendBodyCalculatedColumnToHtml(calculatedColumns[i].summaryMapKey, calculatedColumns[i].top, cellHeight, html);
                     }
                 }
+                // 20210409 : Harry : Set Body Calculated Column - E
 
                 this._elementBodyCalculatedColumn.innerHTML = html.join("");
             }
@@ -2511,11 +2508,12 @@ function viewer(zs) {
             // let frozenHeightCnt = (1 + xPropMax + isShowDataKey);	// #20161230-01 : 값 필드 표시 방향 선택 기능
 
             // 20210331 : Harry : Frozen Width Setting - S
-            // let frozenWidth = frozenCellWidth * yPropMax;
             let frozenWidth = (Object.keys(leafFrozenColWidth).length) ? this._settings.yProperties.reduce((acc, item) => { return acc + Number(leafFrozenColWidth[item.name]) }, 0) : frozenCellWidth * yPropMax;
             // 20210331 : Harry : Frozen Width Setting - E
 
-            let calculatedColumnWidth = this._settings.showCalculatedColumnStyle ? Viewer.SHOW_CALCULATED_COLUMN_WIDTH : 0;
+            // 20210409 : Harry : Set Calculated Column Width - S
+            let calculatedColumnWidth = this._settings.showCalculatedColumnStyle ? (Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropMax) : 0;
+            // 20210409 : Harry : Set Calculated Column Width - E
 
             // 전체 컨텐츠 너비 설정 - Start
             const widthKeys = Object.keys(this._leafColumnWidth);
@@ -2658,10 +2656,11 @@ function viewer(zs) {
             if (this._settings.showCalculatedColumnStyle) {
                 // 연산 열 헤더 추가
                 html.length = 0;
+                // 20210409 : Harry : Set Caculated Column Head - S
                 for (let xpi = 0; xpi < frozenHeightCnt; xpi++) {
-                    let showLabel = (xpi === xPropMax + isShowDataKey) ? true : false;
-                    this.appendHeadCalculatedColumnToHtml(xpi, cellHeight, showLabel, html);
+                    this.appendHeadCalculatedColumnToHtml(xpi, cellHeight, html, frozenHeightCnt);
                 }
+                // 20210409 : Harry : Set Caculated Column Head - E
                 this._elementHeadCalculatedColumn.innerHTML = html.join("");
             }
             html.length = 0;
@@ -3185,7 +3184,8 @@ function viewer(zs) {
             if (this._settings.showCalculatedColumnStyle) {
                 html.length = 0;
                 // 연산 열 데이터 표시
-                if (this.summaryMap[Viewer.EMPTY_Y_AXIS_DIMENSION_KEY]) {
+                // 20210409 : Harry : Set Body Calculated Column - S
+                if (Object.keys(this.summaryMap).join('').indexOf(Viewer.EMPTY_Y_AXIS_DIMENSION_KEY) > -1) {
                     // Y축 차원이 존재하지 않는 경우
                     this.appendBodyCalculatedColumnToHtml(Viewer.EMPTY_Y_AXIS_DIMENSION_KEY, 0, cellHeight, html);
                 } else {
@@ -3193,6 +3193,7 @@ function viewer(zs) {
                         this.appendBodyCalculatedColumnToHtml(calculatedColumns[i].summaryMapKey, calculatedColumns[i].top, cellHeight, html);
                     }
                 }
+                // 20210409 : Harry : Set Body Calculated Column - E
 
                 this._elementBodyCalculatedColumn.innerHTML = html.join("");
             }
@@ -4111,38 +4112,37 @@ function viewer(zs) {
             }
         };
 
-        Viewer.prototype.appendCalculatedColumnDataToSummaryMap = function (column, summaryMap, dataColumnMode) {
+        Viewer.prototype.appendCalculatedColumnDataToSummaryMap = function (column, summaryMap, zProperties) {
             for (let i = 0; i < column.seriesName.length; i++) {
-                // 20210323 : Harry : summaryMap Key Setting - S
-                // let key = _.split(column.seriesName[i], '―').join("||");
+                // 20210409 : Harry : Append Calculated Column To summaryMap - S
                 let seriesNames = column.seriesName[i];
-                let key = (seriesNames.indexOf('SUB-TOTAL') > -1) ? seriesNames.split('―')[0] + '||SUB-TOTAL' : seriesNames.split('―').join("||");
-                key += (dataColumnMode && dataColumnMode === Viewer.DATA_COL_MODE.LEFT) ? '||' + column.name.split(common.__fieldSeparator).splice(-1, 1).join('') : '';
-                // 20210323 : Harry : summaryMap Key Setting - E
+                let key = '';
 
-                if (key === '') {
-                    key = Viewer.EMPTY_Y_AXIS_DIMENSION_KEY;
-                }
+                for (let zPropIdx = 0; zPropIdx < zProperties.length; zPropIdx++) {
+                    let zProp = zProperties[zPropIdx];
 
-                summaryMap[key] || (summaryMap[key] = []);
+                    if (seriesNames !== '') {
+                        key = (seriesNames.indexOf('SUB-TOTAL') > -1) ? seriesNames.split('―')[0] + '||SUB-TOTAL' : seriesNames.split('―').join("||") + '||' + zProp.name;
+                    } else {
+                        key = Viewer.EMPTY_Y_AXIS_DIMENSION_KEY + '||' + zProp.name;
+                    }
 
-                if (column.value[i]) {
+                    summaryMap[key] || (summaryMap[key] = []);
                     summaryMap[key].push(column.value[i]);
                 }
+                // 20210409 : Harry : Append Calculated Column To summaryMap - E
             }
         };
 
         Viewer.prototype.appendBodyCalculatedColumnToHtml = function (summaryMapKey, columnTop, columnHeight, html) {
-            // 20210323 : Harry : summaryMap Value Check - S
-            if (!this.summaryMap[summaryMapKey]) {
-                return;
-            }
-            // 20210323 : Harry : summaryMap Value Check - E
+            let zPropCnt = this._settings.zProperties.length ? this._settings.zProperties.length : 1;
 
+            // row setting
             let rowAttributes = {};
             rowAttributes["class"] = pivotStyle.cssClass.bodyRow;
             rowAttributes["class"] = this.addClassFontStyle(rowAttributes["class"], this._settings.showCalculatedColumnStyle.font);
             rowAttributes["class"] = this.addClassTextAlign(rowAttributes["class"], this._settings.showCalculatedColumnStyle.align, 'RIGHT');
+
             let rowStyles = {};
             rowStyles["width"] = "100%";
             rowStyles["height"] = columnHeight + "px";
@@ -4150,71 +4150,76 @@ function viewer(zs) {
 
             html.push("<div " + common.attributesString(rowAttributes, rowStyles) + ">");
 
+            // column setting
             let columnAttributes = {};
             columnAttributes["class"] = pivotStyle.cssClass.headCell + ' ' + pivotStyle.cssClass.numeric;
+
             let columnStyles = {};
             columnStyles["height"] = columnHeight + "px";
-            columnStyles["width"] = "100%";
+            columnStyles["width"] = Viewer.SHOW_CALCULATED_COLUMN_WIDTH + "px";
             columnStyles["color"] = this._settings.showCalculatedColumnStyle.font.color;
             columnStyles["background-color"] = this._settings.showCalculatedColumnStyle.backgroundColor;
 
-            // 20210319 : Harry : Measure Field Format Setting - S
-            let summaryMapValue = this.summaryMap[summaryMapKey];
-            let fieldFormat = this._settings.format;
-            let zpiProp = this._settings.zProperties.filter(item => item.name === summaryMapKey.split('||').splice(-1, 1).join(''));
-            if (zpiProp.length > 0 && zpiProp[0].fieldFormat) {
-                // original
-                if (!this._isPivot && zpiProp[0].fieldFormat.length > 0) {
-                    zpiProp.fieldFormat.forEach(item => {
-                        if (context.item.COLUMNS === item.aggrColumn) {
-                            fieldFormat = item;
-                        }
-                    });
-                }
-                // pivot
-                else {
-                    fieldFormat = zpiProp[0].fieldFormat;
-                }
+            // 20210409 : Harry : Set summaryValue - S
+            for (let zPropIdx = 0; zPropIdx < zPropCnt; zPropIdx++) {
+                let zpiProp = this._settings.zProperties[zPropIdx];
+                let fieldFormat = zpiProp.fieldFormat ? zpiProp.fieldFormat : this._settings.format;
+                let summaryMapValue = this.summaryMap[summaryMapKey + '||' + zpiProp.name];
+
+                columnStyles["left"] = (Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropIdx) + "px";
+                html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
+                html.push(common.numberFormat(this.getSummaryValue(summaryMapValue, this._settings.showCalculatedColumnStyle), fieldFormat));
+                html.push("</div>");
             }
-            // 20210319 : Harry : Measure Field Format Setting - E
-
-            html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
-
-            // 20210319 : Harry : Number Format Setting - S
-            // html.push(common.numberFormat(this.getSummaryValue(this.summaryMap[summaryMapKey], this._settings.showCalculatedColumnStyle), this._settings.format));
-            html.push(common.numberFormat(this.getSummaryValue(summaryMapValue, this._settings.showCalculatedColumnStyle), fieldFormat));
-            // 20210319 : Harry : Number Format Setting - E
-
-            html.push("</div>");
+            // 20210409 : Harry : Set summaryValue - E
 
             html.push("</div>")
         };
 
-        Viewer.prototype.appendHeadCalculatedColumnToHtml = function (index, cellHeight, showLabel, html) {
+        Viewer.prototype.appendHeadCalculatedColumnToHtml = function (index, cellHeight, html, frozenHeightCnt) {
+            let zPropTitleCnt = this._settings.body.showAxisZ ? 1 : 0;
+            let zPropCnt = this._settings.zProperties.length;
+            let totalFrozenHeightCnt = frozenHeightCnt - zPropTitleCnt;
+
+            // row setting
             let rowAttributes = {};
             rowAttributes["class"] = pivotStyle.cssClass.headRow;
             rowAttributes["class"] = this.addClassFontStyle(rowAttributes["class"], this._settings.showCalculatedColumnStyle.font);
             rowAttributes["class"] = this.addClassTextAlign(rowAttributes["class"], this._settings.showCalculatedColumnStyle.align, 'LEFT');
+
             let rowStyles = {};
             rowStyles["width"] = "100%";
             rowStyles["height"] = cellHeight + "px";
             rowStyles["top"] = index * cellHeight + "px";
             html.push("<div " + common.attributesString(rowAttributes, rowStyles) + ">");
 
+            // column setting
             let columnAttributes = {};
             columnAttributes["class"] = pivotStyle.cssClass.headCell;
-            let columnStyles = {};
-            columnStyles["width"] = Viewer.SHOW_CALCULATED_COLUMN_WIDTH + "px";
-            columnStyles["height"] = cellHeight + "px";
-            columnStyles["color"] = this._settings.showCalculatedColumnStyle.font.color;
-            columnStyles["background-color"] = this._settings.showCalculatedColumnStyle.backgroundColor;
 
-            html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
-            if (showLabel) {
-                html.push(!this._settings.showCalculatedColumnStyle.label || '' === this._settings.showCalculatedColumnStyle.label
-                    ? pivotStyle.summaryLabel[this._settings.showCalculatedColumnStyle.aggregationType] : this._settings.showCalculatedColumnStyle.label);
+            let columnStyles = {};
+            columnStyles["width"] = ( index < totalFrozenHeightCnt ? Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropCnt : Viewer.SHOW_CALCULATED_COLUMN_WIDTH ) + "px";
+            columnStyles["height"] = cellHeight + "px";
+
+            // 20210409 : Harry : Set Caculated Column Head by showAxisZ - S
+            if (index < totalFrozenHeightCnt) {
+                columnStyles["color"] = this._settings.showCalculatedColumnStyle.font.color;
+                columnStyles["background-color"] = this._settings.showCalculatedColumnStyle.backgroundColor;
+                html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
+                if (index === totalFrozenHeightCnt - 1) {
+                    html.push(!this._settings.showCalculatedColumnStyle.label || '' === this._settings.showCalculatedColumnStyle.label
+                        ? pivotStyle.summaryLabel[this._settings.showCalculatedColumnStyle.aggregationType] : this._settings.showCalculatedColumnStyle.label);
+                }
+                html.push("</div>");
+            } else if (zPropTitleCnt) {
+                for (let zPropIdx = 0; zPropIdx < zPropCnt; zPropIdx++) {
+                    columnStyles["left"] = Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropIdx + "px";
+                    html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
+                    html.push(this._settings.zProperties[zPropIdx].name);
+                    html.push("</div>");
+                }
             }
-            html.push("</div>");
+            // 20210409 : Harry : Set Caculated Column Head by showAxisZ - E
 
             html.push("</div>");
         };
