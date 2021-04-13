@@ -4225,7 +4225,7 @@ function viewer(zs) {
                     html.push("</div>");
                 }
             } else {
-                let totalSummaryMapKey = summaryMapKey + '||' + zPropName;
+                let totalSummaryMapKey = (Viewer.EMPTY_Y_AXIS_DIMENSION_KEY.indexOf(summaryMapKey) > -1) ? summaryMapKey + '||' + zPropName : summaryMapKey;
                 let summaryMapValue = this.summaryMap[totalSummaryMapKey];
                 let zpiProp = this._settings.zProperties.filter(item => item.name === totalSummaryMapKey.split('||').slice(-1).join('')).length > 0 ?
                     this._settings.zProperties.filter(item => item.name === totalSummaryMapKey.split('||').slice(-1).join(''))[0] : undefined;
