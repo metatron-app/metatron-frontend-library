@@ -319,8 +319,12 @@ function viewer(zs) {
             if (items.rows && 0 < items.rows.length) {
                 if (this._settings.subCalcCellStyle) {
 
-                    // Horizontal Sub Total
-                    if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.LEFT) {
+                    const subCalcArr = Object.keys(this._settings.subCalcCellStyle).map(item => item.toLowerCase());
+                    const xPropsArr = this._settings.xProperties.map(item => item.name.toLowerCase());
+                    const yPropsArr = this._settings.yProperties.map(item => item.name.toLowerCase());
+
+                    // 20210415 : Harry : Horizontal Sub Total Setting - S
+                    if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.LEFT || (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP && subCalcArr.includes(...yPropsArr))) {
                         // Row 정보에 Sub Total 추가 - Start
                         const subCalc = this._settings.yProperties.map(yProp => this._settings.subCalcCellStyle[yProp.name.toLowerCase()]);
                         let rowArr = items.rows.map(row => row.split('―'));
@@ -404,9 +408,10 @@ function viewer(zs) {
                         });
                         // Column 정보에 Sub Total 에 따른 category 정보 추가 - End
                     }
-                    // 20210406 : Harry : Vertical Sub Total Setting - S
-                    else if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP) {
+                    // 20210415 : Harry : Horizontal Sub Total Setting - E
 
+                    // 20210415 : Harry : Vertical Sub Total Setting - S
+                    if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP || (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.LEFT && subCalcArr.includes(...xPropsArr))) {
                         // Row 정보에 Sub Total 추가 - Start
                         const subCalc = this._settings.xProperties.map(xProp => this._settings.subCalcCellStyle[xProp.name.toLowerCase()]).filter(item => item !== undefined);
 
@@ -517,7 +522,7 @@ function viewer(zs) {
                         });
                         // Column 정보에 Sub Total 에 따른 category 정보 추가 - End
                     }
-                    // 20210406 : Harry : Vertical Sub Total Setting - E
+                    // 20210415 : Harry : Vertical Sub Total Setting - E
                 } else {
                     items.rows = items.rows.map(row => row.split('―').join(common.__fieldSeparator));
                 }
@@ -1018,6 +1023,18 @@ function viewer(zs) {
                 // 20210305 : Harry : Sort Column Click - S
                 .on('click', xAxisSortSelector, function (event) {
                     event.stopImmediatePropagation();
+
+                    // 20210415 : Harry : Prevent Sorting For Vertical + Horizontal Sub Total - S
+                    if (objViewer._settings.subCalcCellStyle) {
+                        const subCalcArr = Object.keys(objViewer._settings.subCalcCellStyle).map(item => item.toLowerCase());
+                        const xPropsArr = objViewer._settings.xProperties.map(item => item.name.toLowerCase());
+                        const yPropsArr = objViewer._settings.yProperties.map(item => item.name.toLowerCase());
+
+                        if (subCalcArr.includes(...xPropsArr) && subCalcArr.includes(...yPropsArr)) {
+                            return;
+                        }
+                    }
+                    // 20210415 : Harry : Prevent Sorting For Vertical + Horizontal Sub Total - E
 
                     let elmData = $(this).attr('title');
                     let elmParentKeys = $(this).attr('data-parent-keys');
@@ -2143,8 +2160,9 @@ function viewer(zs) {
                 // 20210413 : Harry : Set Body Calculated Column - S
                 if (Object.keys(this.summaryMap).join('').indexOf(Viewer.EMPTY_Y_AXIS_DIMENSION_KEY) > -1) {
                     // Y축 차원이 존재하지 않는 경우
-                    this._settings.zProperties.forEach(item => {
-                        this.appendBodyCalculatedColumnToHtml(Viewer.EMPTY_Y_AXIS_DIMENSION_KEY, 0, cellHeight, html, item.name);
+                    this._settings.zProperties.forEach((item, idx) => {
+                        // this.appendBodyCalculatedColumnToHtml(Viewer.EMPTY_Y_AXIS_DIMENSION_KEY, 0, cellHeight, html, item.name);
+                        this.appendBodyCalculatedColumnToHtml(Viewer.EMPTY_Y_AXIS_DIMENSION_KEY, (idx * cellHeight), cellHeight, html, item.name);
                     });
                 } else {
                     for (let i = 0; i < calculatedColumns.length; i++) {
@@ -3164,15 +3182,29 @@ function viewer(zs) {
 
                         frozenColumnStylesLeft += Number(leafFrozenColWidth[propertyName]);
 
-                        // 20210323 : Harry : calculatedColumns Setting - S
+                        // 20210415 : Harry : calculatedColumns Setting - S
                         if (this._settings.showCalculatedColumnStyle && (ypi == this._settings.yProperties.length - 1) && value
                             && !calculatedColumns.filter(item => item.summaryMapKey === arrVals.concat([value]).join("||")).length) {
+
+                            const subCalcArr = Object.keys(this._settings.subCalcCellStyle).map(item => item.toLowerCase());
+                            const yPropsArr = this._settings.yProperties.map(item => item.name.toLowerCase());
+
+                            if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP && subCalcArr.includes(...yPropsArr)) {
+                                const subTotalPropName = this._settings.yProperties[ypi - 1].name;
+                                const subCellStyle = this._settings.subCalcCellStyle[subTotalPropName.toLowerCase()];
+
+                                // Sub Total Value Setting
+                                if (value === subCellStyle.label || value === pivotStyle.subSummaryLabel[subCellStyle.aggregationType]) {
+                                    value = 'SUB-TOTAL';
+                                }
+                            }
+
                             calculatedColumns.push({
                                 summaryMapKey: arrVals.concat([value]).join("||"),
                                 top: index * cellHeight
                             });
                         }
-                        // 20210323 : Harry : calculatedColumns Setting - S
+                        // 20210415 : Harry : calculatedColumns Setting - S
                     }
 
                     html.push("</div>");
@@ -3227,8 +3259,9 @@ function viewer(zs) {
                 // 20210413 : Harry : Set Body Calculated Column - S
                 if (Object.keys(this.summaryMap).join('').indexOf(Viewer.EMPTY_Y_AXIS_DIMENSION_KEY) > -1) {
                     // Y축 차원이 존재하지 않는 경우
-                    this._settings.zProperties.forEach(item => {
-                        this.appendBodyCalculatedColumnToHtml(Viewer.EMPTY_Y_AXIS_DIMENSION_KEY, 0, cellHeight, html, item.name);
+                    this._settings.zProperties.forEach((item, idx) => {
+                        // this.appendBodyCalculatedColumnToHtml(Viewer.EMPTY_Y_AXIS_DIMENSION_KEY, 0, cellHeight, html, item.name);
+                        this.appendBodyCalculatedColumnToHtml(Viewer.EMPTY_Y_AXIS_DIMENSION_KEY, (idx * cellHeight), cellHeight, html, item.name);
                     });
                 } else {
                     for (let i = 0; i < calculatedColumns.length; i++) {
@@ -4231,7 +4264,6 @@ function viewer(zs) {
                     this._settings.zProperties.filter(item => item.name === totalSummaryMapKey.split('||').slice(-1).join(''))[0] : undefined;
                 let fieldFormat = zpiProp && zpiProp.fieldFormat ? zpiProp.fieldFormat : this._settings.format;
 
-                columnStyles["top"] = (columnHeight * this._settings.zProperties.findIndex(item => item.name === zPropName)) + "px";
                 html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                 html.push(common.numberFormat(this.getSummaryValue(summaryMapValue, this._settings.showCalculatedColumnStyle), fieldFormat));
                 html.push("</div>");
