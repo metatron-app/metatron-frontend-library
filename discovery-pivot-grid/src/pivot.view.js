@@ -1781,16 +1781,50 @@ function viewer(zs) {
                             arrKeys.push(this._settings.xProperties[idx].name);
                             arrVals.push(xItem[this._settings.xProperties[idx].name]);
                         } // end for - xProperties
+
+                        // 20210415 : Harry : Validate Child Sub Total Column - S
+                        // cell 병합을 위해 같은 열의 하위 sub-total 컬럼은 skip
+                        if (arrVals.indexOf('SUB-TOTAL') > -1) {
+                            continue;
+                        }
+                        // 20210415 : Harry : Validate Child Sub Total Column - E
+
                         if (0 < arrKeys.length) {
                             columnAttributes["data-parent-keys"] = arrKeys.join("||");
                             columnAttributes["data-parent-vals"] = arrVals.join("||");
                         }
                         // #20161229-01 : 축 선택 시 상위 축 정보 포함 제공 - End
 
+                        // 20210415 : Harry : Set subCalcKey - S
+                        let subCalcKey = '';
+                        let subCalcKeyArr = getSubCalcKey(xItem, Viewer.DATA_COL_MODE.TOP);
+                        for (let idx = 0; idx < this._settings.xProperties.length; idx++) {
+                            if (subCalcKeyArr.indexOf(this._settings.xProperties[idx].name) > -1) {
+                                subCalcKey = this._settings.xProperties[idx].name;
+                                break;
+                            }
+                        }
+                        // 20210415 : Harry : Set subCalcKey - E
+
                         columnStyles = {};
-                        columnStyles["height"] = cellHeight + "px";
-                        columnStyles["color"] = this._settings.header.font.color;
-                        columnStyles["background-color"] = this._settings.header.backgroundColor;
+
+                        // 20210415 : Harry : Set Column Attributes & Styles - S
+                        if (value === 'SUB-TOTAL' && this._settings.subCalcCellStyle && subCalcKey !== '') {
+                            const subCalcCellStyle = this._settings.subCalcCellStyle[subCalcKey.toLowerCase()];
+                            value = !subCalcCellStyle.label || '' === subCalcCellStyle.label
+                                ? pivotStyle.subSummaryLabel[subCalcCellStyle.aggregationType] : subCalcCellStyle.label;
+                            columnAttributes["class"] = this.addClassFontStyle(columnAttributes["class"], subCalcCellStyle.font);
+                            columnAttributes["class"] = this.addClassTextAlign(columnAttributes["class"], subCalcCellStyle.align, 'CENTER');
+                            columnStyles["color"] = subCalcCellStyle.font.color;
+                            columnStyles["background-color"] = subCalcCellStyle.backgroundColor;
+                            columnStyles["height"] = (this._settings.xProperties.length - arrVals.length) * cellHeight + "px";
+                        } else {
+                            columnStyles["color"] = this._settings.header.font.color;
+                            columnStyles["background-color"] = this._settings.header.backgroundColor;
+                            columnStyles["height"] = cellHeight + "px";
+                        }
+                        // 20210415 : Harry : Set Column Attributes & Styles - E
+
                         // 20180807 : Koo : Resize Column - S
                         // columnStyles["left"] = (xii * cellWidth) + "px";
                         // columnStyles["width"] = (colspan * cellWidth) + "px";
@@ -2084,7 +2118,7 @@ function viewer(zs) {
                         html.push("</div>");
                     } // for - zpi
 
-                    // 요약 정보 타이틀 설정 - Start
+                    // 요약 정보 타이틀 설정 (Vertical) - Start
                     if (this._settings.totalValueStyle && yii === this._yItems.length - 1) {
                         for (let _zpi = 0; _zpi < zPropMax; _zpi++) {
                             rowAttributes = {};
@@ -2181,6 +2215,7 @@ function viewer(zs) {
                 let showColorStep = this._settings.body.color && this._settings.body.color.showColorStep ? this._settings.body.color.showColorStep : null;
                 let items = this._items;
                 let stepRangeColors = this._settings.body.color && this._settings.body.color.stepRangeColors ? this._settings.body.color.stepRangeColors : null;
+
                 for (let yii = range.top; yii <= range.bottom; yii++) {
                     let yItem = this._yItems[yii];
                     let subCalcKey = getSubCalcKey(yItem, Viewer.DATA_COL_MODE.LEFT);
@@ -2229,6 +2264,7 @@ function viewer(zs) {
                             columnAttributes["data-colIdx"] = xii; // colIdx 가 인덱스 번호대로 시작
 
                             columnStyles = {};
+
                             columnStyles["height"] = cellHeight + "px";
                             // 20180807 : Koo : Resize Column - S
                             // columnStyles["left"] = (xii * cellWidth) + "px";
@@ -2303,6 +2339,24 @@ function viewer(zs) {
                                     }
                                     // Cell Index 추출 및 설정 - End
 
+                                    // 20210416 : Harry : Set subCalcKey For xItem - S
+                                    // Horizontal + Vertical인 경우 xItem 기준으로 Sub Total 컬럼에 대해 subCalcKey 설정
+                                    if (this._settings.subCalcCellStyle && !subCalcKey) {
+                                        const subCalcArr = Object.keys(this._settings.subCalcCellStyle).map(item => item.toLowerCase());
+                                        const xPropsArr = this._settings.xProperties.map(item => item.name.toLowerCase());
+
+                                        if (Viewer.DATA_COL_MODE.LEFT && subCalcArr.includes(...xPropsArr) && arrParentVal.indexOf('SUB-TOTAL') > -1) {
+                                            let subCalcKeyArr = getSubCalcKey(xItem, Viewer.DATA_COL_MODE.TOP);
+                                            for (let idx = 0; idx < this._settings.xProperties.length; idx++) {
+                                                if (subCalcKeyArr.indexOf(this._settings.xProperties[idx].name) > -1) {
+                                                    subCalcKey = this._settings.xProperties[idx].name;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    // 20210416 : Harry : Set subCalcKey For xItem - E
+
                                     if (isCalcRow) {
                                         if (this.isDefaultTextAlign(this._settings.calcCellStyle.align)) {
                                             columnAttributes["class"] += ' ' + pivotStyle.cssClass.txtRight
@@ -2318,6 +2372,11 @@ function viewer(zs) {
                                         columnAttributes["class"] += ' ' + pivotStyle.cssClass.numeric;
                                         columnStyles["color"] = subCalcCellStyle.font.color;
                                         columnStyles["background-color"] = subCalcCellStyle.backgroundColor;
+
+                                        // 20210416 : Harry : Set subCalcKey For yItem - S
+                                        // subCalcKey는 Horizontal 기준이기 때문에 yItem에 맞추어 재설정
+                                        subCalcKey = getSubCalcKey(yItem, Viewer.DATA_COL_MODE.LEFT);
+                                        // 20210416 : Harry : Set subCalcKey For yItem - E
                                     } else if ('number' === typeof itemData) {
                                         columnAttributes["class"] += ' ' + pivotStyle.cssClass.numeric;
                                         // 단계별 색상 설정 추가 - Start
@@ -2413,7 +2472,7 @@ function viewer(zs) {
                         html.push("</div>");
                     } // end for - zpi
 
-                    // 요약 정보 데이터 표시 설정 - Start
+                    // 요약 정보 데이터 표시 설정 (Horizontal) - Start
                     if (this._settings.totalValueStyle && yii === this._yItems.length - 1) {
                         for (let zpi3 = 0; zpi3 < zPropMax; zpi3++) {
 
@@ -2485,7 +2544,7 @@ function viewer(zs) {
                                 let summaryKey = '' === leafColName ? zpiProp.name : leafColName + '||' + zpiProp.name;
 
                                 // 20210413 : Harry : Remove Sub Total Value For Total Value - S
-                                // SUB-TOTAL index 배열 세팅
+                                // Sub Total index 배열 세팅
                                 let subTotalIdxArr = this._yItems.map(function(item, idx) {
                                     if (Object.values(item).indexOf('SUB-TOTAL') > -1) {
                                         return idx;
@@ -2495,7 +2554,7 @@ function viewer(zs) {
                                         return item;
                                     }
                                 });
-                                // 총합 연산을 위한 SUB-TOTAL value 삭제
+                                // 총합 연산을 위한 Sub Total value 삭제
                                 let summaryValueArr = _.cloneDeep(this.summaryMap[summaryKey]);
                                 if (summaryValueArr) {
                                     subTotalIdxArr.forEach(function(item, idx) {
@@ -3190,7 +3249,7 @@ function viewer(zs) {
                             const yPropsArr = this._settings.yProperties.map(item => item.name.toLowerCase());
 
                             if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP && subCalcArr.includes(...yPropsArr)) {
-                                const subTotalPropName = this._settings.yProperties[ypi - 1].name;
+                                const subTotalPropName = (yPropMax === 1) ? this._settings.yProperties[ypi].name : this._settings.yProperties[ypi - 1].name;
                                 const subCellStyle = this._settings.subCalcCellStyle[subTotalPropName.toLowerCase()];
 
                                 // Sub Total Value Setting
@@ -3209,7 +3268,7 @@ function viewer(zs) {
 
                     html.push("</div>");
 
-                    // 요약 정보 타이틀 설정 - Start
+                    // 요약 정보 타이틀 설정 (Vertical) - Start
                     if (this._settings.totalValueStyle && 0 < yPropMax && yii === this._yItems.length - 1) {
                         rowAttributes = {};
                         rowAttributes["class"] = pivotStyle.cssClass.headRow;
@@ -3528,7 +3587,7 @@ function viewer(zs) {
                     } // end for - xii
                     html.push("</div>");
 
-                    // 요약 정보 데이터 표시 설정 - Start
+                    // 요약 정보 데이터 표시 설정 (Vertical) - Start
                     if (this._settings.totalValueStyle && yii === this._yItems.length - 1) {
                         rowAttributes = {};
                         rowAttributes["class"] = pivotStyle.cssClass.bodyRow;
@@ -3608,15 +3667,35 @@ function viewer(zs) {
                                 }
                                 // 20210317 : Harry : Measure Field Format Setting - E
 
+                                // 20210416 : Harry : Remove Sub Total Value For Total Value - S
+                                // Sub Total index 배열 세팅
+                                let subTotalIdxArr = this._yItems.map(function(item, idx) {
+                                    if (Object.values(item).indexOf('SUB-TOTAL') > -1) {
+                                        return idx;
+                                    }
+                                }).filter(function(item) {
+                                    if (item > -1) {
+                                        return item;
+                                    }
+                                });
+                                // 총합 연산을 위한 Sub Total value 삭제
+                                let summaryValueArr = _.cloneDeep(this.summaryMap[summaryKey]);
+                                if (summaryValueArr) {
+                                    subTotalIdxArr.forEach(function(item, idx) {
+                                        summaryValueArr.splice(item - idx, 1);
+                                    });
+                                }
+                                // 20210416 : Harry : Remove Sub Total Value For Total Value - E
+
                                 html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                                 if (zpiProp.type && 'origin' === this._settings.format.type && !this._isPivot) {
-                                    // 20210317 : Harry : Number Format Setting - S
-                                    html.push(common.numberFormat(this.getSummaryValue(this.summaryMap[summaryKey], this._settings.totalValueStyle), fieldFormat, zpiProp.type));
-                                    // 20210317 : Harry : Number Format Setting - E
+                                    // 20210416 : Harry : Number Format Setting - S
+                                    html.push(common.numberFormat(this.getSummaryValue(summaryValueArr, this._settings.totalValueStyle), fieldFormat, zpiProp.type));
+                                    // 20210416 : Harry : Number Format Setting - E
                                 } else {
-                                    // 20210317 : Harry : Number Format Setting - S
-                                    html.push(common.numberFormat(this.getSummaryValue(this.summaryMap[summaryKey], this._settings.totalValueStyle), fieldFormat));
-                                    // 20210317 : Harry : Number Format Setting - E
+                                    // 20210416 : Harry : Number Format Setting - S
+                                    html.push(common.numberFormat(this.getSummaryValue(summaryValueArr, this._settings.totalValueStyle), fieldFormat));
+                                    // 20210416 : Harry : Number Format Setting - E
                                 }
                                 html.push("</div>");
 
@@ -3635,7 +3714,7 @@ function viewer(zs) {
             // add execute function - Start
             pivotStyle.setClickStyle.apply(this);
             // add execute function - End
-        }; // func - renderDataToHorizontal
+        }; // func - renderDataToVertical
 
         /**
          * Table Contents Rendering Function for Download
