@@ -3241,20 +3241,23 @@ function viewer(zs) {
 
                         frozenColumnStylesLeft += Number(leafFrozenColWidth[propertyName]);
 
-                        // 20210415 : Harry : calculatedColumns Setting - S
+                        // 20210419 : Harry : calculatedColumns Setting - S
                         if (this._settings.showCalculatedColumnStyle && (ypi == this._settings.yProperties.length - 1) && value
                             && !calculatedColumns.filter(item => item.summaryMapKey === arrVals.concat([value]).join("||")).length) {
 
-                            const subCalcArr = Object.keys(this._settings.subCalcCellStyle).map(item => item.toLowerCase());
-                            const yPropsArr = this._settings.yProperties.map(item => item.name.toLowerCase());
+                            // Sub Total이 적용된 경우에 대한 value 설정
+                            if (this._settings.subCalcCellStyle) {
+                                const subCalcArr = Object.keys(this._settings.subCalcCellStyle).map(item => item.toLowerCase());
+                                const yPropsArr = this._settings.yProperties.map(item => item.name.toLowerCase());
 
-                            if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP && subCalcArr.includes(...yPropsArr)) {
-                                const subTotalPropName = (yPropMax === 1) ? this._settings.yProperties[ypi].name : this._settings.yProperties[ypi - 1].name;
-                                const subCellStyle = this._settings.subCalcCellStyle[subTotalPropName.toLowerCase()];
+                                if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP && subCalcArr.includes(...yPropsArr)) {
+                                    const subTotalPropName = (yPropMax === 1) ? this._settings.yProperties[ypi].name : this._settings.yProperties[ypi - 1].name;
+                                    const subCellStyle = this._settings.subCalcCellStyle[subTotalPropName.toLowerCase()];
 
-                                // Sub Total Value Setting
-                                if (value === subCellStyle.label || value === pivotStyle.subSummaryLabel[subCellStyle.aggregationType]) {
-                                    value = 'SUB-TOTAL';
+                                    // Sub Total Value Setting
+                                    if (value === subCellStyle.label || value === pivotStyle.subSummaryLabel[subCellStyle.aggregationType]) {
+                                        value = 'SUB-TOTAL';
+                                    }
                                 }
                             }
 
@@ -3263,7 +3266,7 @@ function viewer(zs) {
                                 top: index * cellHeight
                             });
                         }
-                        // 20210415 : Harry : calculatedColumns Setting - S
+                        // 20210419 : Harry : calculatedColumns Setting - S
                     }
 
                     html.push("</div>");
