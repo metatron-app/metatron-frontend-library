@@ -14,13 +14,15 @@ function style(zs) {
 		COUNT: 'Count'
 	};
 
+    // Add Value by harry - Start
 	PivotStyle.subSummaryLabel = {
 		SUM : 'Sub Total',
-		AVERAGE : 'Sub Total',
-		MAX : 'Sub Total',
-		MIN : 'Sub Total',
-		COUNT : 'Sub Total'
+		AVERAGE : 'Sub Average',
+		MAX : 'Sub Max',
+		MIN : 'Sub Min',
+		COUNT : 'Sub Count'
 	};
+    // Add Value by harry - End
 
 	PivotStyle.cssClass = {
 		container: "pivot-view",
