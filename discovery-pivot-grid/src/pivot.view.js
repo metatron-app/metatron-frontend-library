@@ -2339,9 +2339,9 @@ function viewer(zs) {
                                     }
                                     // Cell Index 추출 및 설정 - End
 
-                                    // 20210416 : Harry : Set subCalcKey For xItem - S
+                                    // 20210421 : Harry : Set subCalcKey For xItem - S
                                     // Horizontal + Vertical인 경우 xItem 기준으로 Sub Total 컬럼에 대해 subCalcKey 설정
-                                    if (this._settings.subCalcCellStyle && !subCalcKey) {
+                                    if ((this._settings.subCalcCellStyle && !subCalcKey) || (context.item.hasOwnProperty(subCalcKey) && context.item[subCalcKey] !== 'SUB-TOTAL')) {
                                         const subCalcArr = Object.keys(this._settings.subCalcCellStyle).map(item => item.toLowerCase());
                                         const xPropsArr = this._settings.xProperties.map(item => item.name.toLowerCase());
 
@@ -2355,7 +2355,7 @@ function viewer(zs) {
                                             }
                                         }
                                     }
-                                    // 20210416 : Harry : Set subCalcKey For xItem - E
+                                    // 20210421 : Harry : Set subCalcKey For xItem - E
 
                                     if (isCalcRow) {
                                         if (this.isDefaultTextAlign(this._settings.calcCellStyle.align)) {
@@ -2372,6 +2372,58 @@ function viewer(zs) {
                                         columnAttributes["class"] += ' ' + pivotStyle.cssClass.numeric;
                                         columnStyles["color"] = subCalcCellStyle.font.color;
                                         columnStyles["background-color"] = subCalcCellStyle.backgroundColor;
+
+                                        // 20210421 : Harry : Set Sub Total Font Size & Style - S
+                                        // Set Font Size & Style
+                                        columnStyles["font-style"] = 'normal';
+                                        columnStyles["font-weight"] = 'normal';
+                                        columnStyles["font-size"] = subCalcCellStyle.font.size + 'px';
+                                        subCalcCellStyle.font.styles.forEach(item => {
+                                            if (item === 'BOLD') {
+                                                columnStyles["font-weight"] = item;
+                                            } else if (item === 'ITALIC') {
+                                                columnStyles["font-style"] = item;
+                                            }
+                                        });
+
+                                        // Set Text Align (LEFT, CENTER, RIGHT, DEFAULT)
+                                        if (subCalcCellStyle.align.hAlign) {
+                                            columnStyles['display'] = 'flex';
+                                            switch (subCalcCellStyle.align.hAlign) {
+                                                case 'LEFT':
+                                                    columnStyles["justify-content"] = 'flex-start';
+                                                    break;
+                                                case 'CENTER':
+                                                    columnStyles["justify-content"] = 'center';
+                                                    break;
+                                                case 'RIGHT':
+                                                    columnStyles["justify-content"] = 'flex-end';
+                                                    break;
+                                                case 'DEFAULT':
+                                                    delete columnStyles["justify-content"];
+                                                    break;
+                                            }
+                                        }
+
+                                        // Set Vetical Align (TOP, MIDDLE, BOTTOM)
+                                        if (subCalcCellStyle.align.vAlign) {
+                                            columnStyles['display'] = 'flex';
+                                            switch (subCalcCellStyle.align.vAlign) {
+                                                case 'TOP':
+                                                    columnStyles["align-items"] = 'flex-start';
+                                                    break;
+                                                case 'MIDDLE':
+                                                    columnStyles["align-items"] = 'center';
+                                                    break;
+                                                case 'BOTTOM':
+                                                    columnStyles["align-items"] = 'flex-end';
+                                                    break;
+                                                default:
+                                                    delete columnStyles["align-items"];
+                                                    break;
+                                            }
+                                        }
+                                        // 20210421 : Harry : Set Sub Total Font Size & Style - E
 
                                         // 20210416 : Harry : Set subCalcKey For yItem - S
                                         // subCalcKey는 Horizontal 기준이기 때문에 yItem에 맞추어 재설정
@@ -3491,12 +3543,13 @@ function viewer(zs) {
                                     }
                                     // Cell Index 추출 및 설정 - End
 
-                                    // 20210420 : Harry : Set subCalcKey For xItem - S
+                                    // 20210421 : Harry : Set subCalcKey For xItem - S
                                     // Vertical + Horizontal인 경우 xItem 기준으로 Sub Total 컬럼에 대해 subCalcKey 설정
-                                    if (this._settings.subCalcCellStyle && !subCalcKey) {
+                                    if (this._settings.subCalcCellStyle || (context.item.hasOwnProperty(subCalcKey) && context.item[subCalcKey] === 'SUB-TOTAL')) {
                                         const subCalcArr = Object.keys(this._settings.subCalcCellStyle).map(item => item.toLowerCase());
                                         const xPropsArr = this._settings.xProperties.map(item => item.name.toLowerCase());
 
+                                        // arrParentVal에 SUB-TOTAL이 포함되어 있을 경우 xProp 기준으로 subCalcKey 설정
                                         if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP && subCalcArr.includes(...xPropsArr) && arrParentVal.indexOf('SUB-TOTAL') > -1) {
                                             let subCalcKeyArr = getSubCalcKey(xItem, Viewer.DATA_COL_MODE.TOP);
                                             for (let idx = 0; idx < this._settings.xProperties.length; idx++) {
@@ -3507,7 +3560,7 @@ function viewer(zs) {
                                             }
                                         }
                                     }
-                                    // 20210420 : Harry : Set subCalcKey For xItem - E
+                                    // 20210421 : Harry : Set subCalcKey For xItem - E
 
                                     if (isCalcRow) {
                                         if (this.isDefaultTextAlign(this._settings.totalValueStyle.align)) {
@@ -3527,8 +3580,10 @@ function viewer(zs) {
                                         columnStyles["color"] = subCalcCellStyle.font.color;
                                         columnStyles["background-color"] = subCalcCellStyle.backgroundColor;
 
-                                        // 20210420 : Harry : Set Sub Total Font Size & Style - S
+                                        // 20210421 : Harry : Set Sub Total Font Size & Style - S
                                         // Set Font Size & Style
+                                        columnStyles["font-style"] = 'normal';
+                                        columnStyles["font-weight"] = 'normal';
                                         columnStyles["font-size"] = subCalcCellStyle.font.size + 'px';
                                         subCalcCellStyle.font.styles.forEach(item => {
                                            if (item === 'BOLD') {
@@ -3575,7 +3630,7 @@ function viewer(zs) {
                                                     break;
                                             }
                                         }
-                                        // 20210420 : Harry : Set Sub Total Font Size & Style - E
+                                        // 20210421 : Harry : Set Sub Total Font Size & Style - E
                                     } else if ('number' === typeof itemData) {
                                         columnAttributes["class"] += ' ' + pivotStyle.cssClass.numeric;
                                         // 단계별 색상 설정 추가 - Start
