@@ -1860,6 +1860,58 @@ function viewer(zs) {
                             columnStyles["color"] = subCalcCellStyle.font.color;
                             columnStyles["background-color"] = subCalcCellStyle.backgroundColor;
                             columnStyles["height"] = (this._settings.xProperties.length - arrVals.length) * cellHeight + "px";
+
+                            // 20210423 : Harry : Set Sub Total Font Size & Style - S
+                            // Set Font Size & Style
+                            columnStyles["font-style"] = 'normal';
+                            columnStyles["font-weight"] = 'normal';
+                            columnStyles["font-size"] = subCalcCellStyle.font.size + 'px';
+                            subCalcCellStyle.font.styles.forEach(item => {
+                                if (item === 'BOLD') {
+                                    columnStyles["font-weight"] = item;
+                                } else if (item === 'ITALIC') {
+                                    columnStyles["font-style"] = item;
+                                }
+                            });
+
+                            // Set Text Align (LEFT, CENTER, RIGHT, DEFAULT)
+                            if (subCalcCellStyle.align.hAlign) {
+                                columnStyles['display'] = 'flex';
+                                switch (subCalcCellStyle.align.hAlign) {
+                                    case 'LEFT':
+                                        columnStyles["justify-content"] = 'flex-start';
+                                        break;
+                                    case 'CENTER':
+                                        columnStyles["justify-content"] = 'center';
+                                        break;
+                                    case 'RIGHT':
+                                        columnStyles["justify-content"] = 'flex-end';
+                                        break;
+                                    case 'DEFAULT':
+                                        delete columnStyles["justify-content"];
+                                        break;
+                                }
+                            }
+
+                            // Set Vetical Align (TOP, MIDDLE, BOTTOM)
+                            if (subCalcCellStyle.align.vAlign) {
+                                columnStyles['display'] = 'flex';
+                                switch (subCalcCellStyle.align.vAlign) {
+                                    case 'TOP':
+                                        columnStyles["align-items"] = 'flex-start';
+                                        break;
+                                    case 'MIDDLE':
+                                        columnStyles["align-items"] = 'center';
+                                        break;
+                                    case 'BOTTOM':
+                                        columnStyles["align-items"] = 'flex-end';
+                                        break;
+                                    default:
+                                        delete columnStyles["align-items"];
+                                        break;
+                                }
+                            }
+                            // 20210423 : Harry : Set Sub Total Font Size & Style - E
                         } else {
                             columnStyles["color"] = this._settings.header.font.color;
                             columnStyles["background-color"] = this._settings.header.backgroundColor;
@@ -2998,12 +3050,68 @@ function viewer(zs) {
                             columnStyles["color"] = subCalcCellStyle.font.color;
                             columnStyles["background-color"] = subCalcCellStyle.backgroundColor;
                             columnStyles["height"] = (this._settings.xProperties.length - arrVals.length) * cellHeight + "px";
+
+                            // 20210423 : Harry : Set Sub Total Font Size & Style - S
+                            // Set Font Size & Style
+                            columnStyles["font-style"] = 'normal';
+                            columnStyles["font-weight"] = 'normal';
+                            columnStyles["font-size"] = subCalcCellStyle.font.size + 'px';
+                            subCalcCellStyle.font.styles.forEach(item => {
+                                if (item === 'BOLD') {
+                                    columnStyles["font-weight"] = item;
+                                } else if (item === 'ITALIC') {
+                                    columnStyles["font-style"] = item;
+                                }
+                            });
+
+                            // Set Text Align (LEFT, CENTER, RIGHT, DEFAULT)
+                            if (subCalcCellStyle.align.hAlign) {
+                                columnStyles['display'] = 'flex';
+                                switch (subCalcCellStyle.align.hAlign) {
+                                    case 'LEFT':
+                                        columnStyles["justify-content"] = 'flex-start';
+                                        break;
+                                    case 'CENTER':
+                                        columnStyles["justify-content"] = 'center';
+                                        break;
+                                    case 'RIGHT':
+                                        columnStyles["justify-content"] = 'flex-end';
+                                        break;
+                                    case 'DEFAULT':
+                                        delete columnStyles["justify-content"];
+                                        break;
+                                }
+                            }
+
+                            // Set Vetical Align (TOP, MIDDLE, BOTTOM)
+                            if (subCalcCellStyle.align.vAlign) {
+                                columnStyles['display'] = 'flex';
+                                switch (subCalcCellStyle.align.vAlign) {
+                                    case 'TOP':
+                                        columnStyles["align-items"] = 'flex-start';
+                                        break;
+                                    case 'MIDDLE':
+                                        columnStyles["align-items"] = 'center';
+                                        break;
+                                    case 'BOTTOM':
+                                        columnStyles["align-items"] = 'flex-end';
+                                        break;
+                                    default:
+                                        delete columnStyles["align-items"];
+                                        break;
+                                }
+                            }
+                            // 20210423 : Harry : Set Sub Total Font Size & Style - E
                         } else {
                             columnStyles["color"] = this._settings.header.font.color;
                             columnStyles["background-color"] = this._settings.header.backgroundColor;
                             columnStyles["height"] = cellHeight + "px";
                         }
                         // 20210406 : Harry : Set Column Attributes & Styles - E
+
+                        //TODO
+                        console.log('columnAttributes', columnAttributes);
+                        console.log('columnStyles', columnStyles);
 
                         // 20180807 : Koo : Resize Column - S
                         // columnStyles["left"] = (zPropMax * xii * cellWidth) + "px";
