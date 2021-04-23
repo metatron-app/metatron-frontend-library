@@ -298,23 +298,6 @@ function viewer(zs) {
             this._bodyCellSelectInfo = {};
             // Add Property by eltriny - end
 
-            // 20210406 : Harry : Leaf Column Width - S
-            if (Object.keys(this._settings.columnWidth).length > 0 ) {
-                let objLeafColumnWidth = this._settings.columnWidth;
-                let objLeafColumnWidthKeys = Object.keys(objLeafColumnWidth);
-
-                if (objLeafColumnWidthKeys.length > 0) {
-                    objLeafColumnWidthKeys.forEach(key => {
-                        if (key && this._settings.yProperties.findIndex(item => item.name === key) < 0) {
-                            this._leafColumnWidth[key] = objLeafColumnWidth[key];
-                        } else if (key && this._settings.yProperties.findIndex(item => item.name === key) > -1) {
-                            this._leafFrozenColumnWidth[key] = objLeafColumnWidth[key];
-                        }
-                    });
-                }
-            }
-            // 20210406 : Harry : Leaf Column Width - E
-
             // 데이터 정리 - Start
             if (items.rows && 0 < items.rows.length) {
                 if (this._settings.subCalcCellStyle) {
@@ -973,6 +956,65 @@ function viewer(zs) {
                 this._elementHead.appendChild(this._elementHeadCalculatedColumn);
                 this._elementBody.appendChild(this._elementBodyCalculatedColumn);
             }
+
+            // 20210423 : Harry : Set Leaf Column Width - S
+            let leafColWidth = {};
+            
+            // Set xItems For leafColWidth
+            this._xItems.forEach((item) => {
+                let leafColumnWidthName = this._settings.xProperties.reduce((acc, currProp) => {
+                    acc = '' === acc ? acc : acc + "||";
+                    return acc + item[currProp.name];
+                }, '');
+                // Vertical은 zProp name을 뒤에 붙여줌
+                if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP) {
+                    this._settings.zProperties.forEach(zProp => {
+                        let name = '' !== leafColumnWidthName ? leafColumnWidthName + "||" + zProp.name : zProp.name;
+                        'undefined' === typeof leafColWidth[name] && (leafColWidth[name] = this._settings.cellWidth);
+                        // totalWidth = totalWidth + Number(leafColWidth[name]);
+                    });
+                }
+                // Horizontal은 zProp name을 붙이지 않음
+                else {
+                    'undefined' === typeof leafColWidth[leafColumnWidthName] && (leafColWidth[leafColumnWidthName] = this._settings.cellWidth);
+                }
+            });
+            
+            // Set yPropertie For leafColWidth
+            this._settings.yProperties.map(item => item.name).forEach(yProp => {
+                leafColWidth[yProp] = this._settings.cellWidth;
+            });
+
+            // Horizontal에서 zProp을 표시하는 경우에는 추가해줌 (leafColWidth)
+            if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.LEFT && this._settings.body.showAxisZ) {
+                leafColWidth[Viewer.FROZEN_COLUMN_ADDITIONAL_KEY + this._settings.yProperties.length] = this._settings.cellWidth;
+            }
+
+            let columnWidthKeys = Object.keys(this._settings.columnWidth);
+            let leafColWidthKeys = Object.keys(leafColWidth);
+
+            // 설정된 컬럼 너비가 있는 경우, 설정된 컬럼 너비 배열의 string 값과 현재 그리드에 표시될 컬럼 배열의 string 값을 비교
+            // 개수가 일치할 경우 _leafColumnWidth, _leafFrozenColumnWidth를 설정
+            if (Object.keys(this._settings.columnWidth).length > 0 && (columnWidthKeys.sort().join('') === leafColWidthKeys.sort().join(''))) {
+                let objLeafColumnWidth = this._settings.columnWidth;
+                let objLeafColumnWidthKeys = Object.keys(objLeafColumnWidth);
+
+                if (objLeafColumnWidthKeys.length > 0) {
+                    objLeafColumnWidthKeys.forEach(key => {
+                        if (key && this._settings.yProperties.findIndex(item => item.name === key) < 0) {
+                            if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.LEFT && this._settings.body.showAxisZ
+                                && key === (Viewer.FROZEN_COLUMN_ADDITIONAL_KEY + this._settings.yProperties.length)) {
+                                this._leafFrozenColumnWidth[key] = Number(objLeafColumnWidth[key]);
+                            } else {
+                                this._leafColumnWidth[key] = Number(objLeafColumnWidth[key]);
+                            }
+                        } else if (key && this._settings.yProperties.findIndex(item => item.name === key) > -1) {
+                            this._leafFrozenColumnWidth[key] = Number(objLeafColumnWidth[key]);
+                        }
+                    });
+                }
+            }
+            // 20210423 : Harry : Set Leaf Column Width - E
 
             this.arrange();
 
