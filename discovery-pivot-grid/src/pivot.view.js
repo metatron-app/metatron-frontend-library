@@ -994,7 +994,7 @@ function viewer(zs) {
             let leafColWidthKeys = Object.keys(leafColWidth);
 
             // 설정된 컬럼 너비가 있는 경우, 설정된 컬럼 너비 배열의 string 값과 현재 그리드에 표시될 컬럼 배열의 string 값을 비교
-            // 개수가 일치할 경우 _leafColumnWidth, _leafFrozenColumnWidth를 설정
+            // 비교한 값이 일치하는 경우 _leafColumnWidth, _leafFrozenColumnWidth를 설정
             if (Object.keys(this._settings.columnWidth).length > 0 && (columnWidthKeys.sort().join('') === leafColWidthKeys.sort().join(''))) {
                 let objLeafColumnWidth = this._settings.columnWidth;
                 let objLeafColumnWidthKeys = Object.keys(objLeafColumnWidth);
@@ -1564,22 +1564,26 @@ function viewer(zs) {
             let zPropMax = this._settings.zProperties.length;
             let cellHeightZ = cellHeight * zPropMax;
             let frozenCellWidth = this._settings.leftAxisWidth ? this._settings.leftAxisWidth : this._settings.cellWidth;
-            let calculatedColumnWidth = this._settings.showCalculatedColumnStyle ? Viewer.SHOW_CALCULATED_COLUMN_WIDTH : 0;
             // xProp의 이름에 대한 cnt, 원본보기일때에는 title (COLUMNS)을 표시하지않으므로 0으로 설정
             const xPropTitleCnt = this._isPivot ? 1 : 0;
             let frozenHeightCnt = xPropTitleCnt + xPropMax; // #20161230-01 : 값 필드 표시 방향 선택 기능
             // let frozenHeight = cellHeight * frozenHeightCnt;
 
-            // 20210413 : Harry : Frozen Width Setting - S
+            // 20210426 : Harry : Frozen Width Setting - S
             // let frozenWidth = frozenCellWidth * (yPropMax + isShowDataKey);
-            let frozenWidth = (Object.keys(leafFrozenColWidth).length) ? this._settings.yProperties.reduce((acc, item) => { return acc + Number(leafFrozenColWidth[item.name]) }, 0) : frozenCellWidth * (yPropMax + isShowDataKey);
-            // 20210413 : Harry : Frozen Width Setting - E
+            let frozenWidth = (Object.keys(leafFrozenColWidth).length) ? frozenCellWidth * isShowDataKey + this._settings.yProperties.reduce((acc, item) => { return acc + Number(leafFrozenColWidth[item.name]) }, 0) : frozenCellWidth * (yPropMax + isShowDataKey);
+            // 20210426 : Harry : Frozen Width Setting - E
+
+            // 20210426 : Harry : Set Calculated Column Width - S
+            let calculatedColumnWidth = this._settings.showCalculatedColumnStyle ? Viewer.SHOW_CALCULATED_COLUMN_WIDTH : 0;
+            // 20210426 : Harry : Set Calculated Column Width - E
 
             // 전체 컨텐츠 너비 설정 - Start
             const widthKeys = Object.keys(this._leafColumnWidth);
             if (0 < widthKeys.length) {
-                // 20210331 : Harry : Content Size Width Setting - E
-                let contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
+                // 20210426 : Harry : Content Size Width Setting - S
+                // contentSizeWidth에는 연산 열(calculatedColumnWidth) 너비를 추가
+                let contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0) + calculatedColumnWidth;
                 let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - frozenWidth;
 
                 if (this.IS_FILL_WIDTH && contentSizeWidth < currentGridWidth) {
@@ -1587,7 +1591,7 @@ function viewer(zs) {
                     widthKeys.forEach(item => this._leafColumnWidth[item] = this._leafColumnWidth[item] + cellDiffWidth);
                     contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
                 }
-                // 20210331 : Harry : Content Size Width Setting - E
+                // 20210426 : Harry : Content Size Width Setting - E
 
                 this._elementHeadWrap.style.width = contentSizeWidth + "px";
                 this._elementBodyWrap.style.width = contentSizeWidth + "px";
@@ -2774,8 +2778,9 @@ function viewer(zs) {
             // 전체 컨텐츠 너비 설정 - Start
             const widthKeys = Object.keys(this._leafColumnWidth);
             if (0 < widthKeys.length) {
-                // 20210331 : Harry : Content Size Width Setting - E
-                let contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
+                // 20210426 : Harry : Content Size Width Setting - S
+                // contentSizeWidth에는 연산 열(calculatedColumnWidth) 너비를 추가
+                let contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0) + calculatedColumnWidth;
                 let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - frozenWidth;
 
                 if (this.IS_FILL_WIDTH && contentSizeWidth < currentGridWidth) {
@@ -2783,7 +2788,7 @@ function viewer(zs) {
                     widthKeys.forEach(item => this._leafColumnWidth[item] = this._leafColumnWidth[item] + cellDiffWidth);
                     contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
                 }
-                // 20210331 : Harry : Content Size Width Setting - E
+                // 20210426 : Harry : Content Size Width Setting - E
 
                 this._elementHeadWrap.style.width = contentSizeWidth + "px";
                 this._elementBodyWrap.style.width = contentSizeWidth + "px";
@@ -3108,10 +3113,6 @@ function viewer(zs) {
                             columnStyles["height"] = cellHeight + "px";
                         }
                         // 20210406 : Harry : Set Column Attributes & Styles - E
-
-                        //TODO
-                        console.log('columnAttributes', columnAttributes);
-                        console.log('columnStyles', columnStyles);
 
                         // 20180807 : Koo : Resize Column - S
                         // columnStyles["left"] = (zPropMax * xii * cellWidth) + "px";
