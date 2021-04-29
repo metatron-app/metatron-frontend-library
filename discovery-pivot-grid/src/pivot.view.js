@@ -4463,9 +4463,19 @@ function viewer(zs) {
         Viewer.prototype.resize = function () {
             (this.timer) && (clearTimeout(this.timer));
 
+            // 20210429 : Harry : Set calculatedColumnWidth - S
+            let calculatedColumnWidth = _this6._settings.showCalculatedColumnStyle ? Viewer.SHOW_CALCULATED_COLUMN_WIDTH : 0;
+            // 20210429 : Harry : Set calculatedColumnWidth - E
+
             const redraw = () => {
                 let widthKeys = Object.keys(this._leafColumnWidth);
-                let contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
+
+                // 20210429 : Harry : Set contentSizeWidth - S
+                let contentSizeWidth = widthKeys.reduce((acc, item) => {
+                    return acc + Number(this._leafColumnWidth[item])
+                }, 0) + calculatedColumnWidth;
+                // 20210429 : Harry : Set contentSizeWidth - E
+
                 let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - (this._elementBodyFrozen.style.width.replace(/px/gi, '') * 1);
 
                 if (contentSizeWidth <= currentGridWidth && 0 < widthKeys.length) {
@@ -4529,9 +4539,9 @@ function viewer(zs) {
             }, 0);
 
             this._elementHeadWrap.style.left = frozenWidth + "px";
-            this._elementBodyWrap.style.left = frozenWidth + "px";
-
             this._elementHeadFrozen.style.width = frozenWidth + "px";
+
+            this._elementBodyWrap.style.left = frozenWidth + "px";
             this._elementBodyFrozen.style.width = frozenWidth + "px";
 
             if (_this2._settings.showCalculatedColumnStyle) {
