@@ -1814,7 +1814,9 @@ function viewer(zs) {
                         columnAttributes = {};
 
                         // Add Property by eltriny
-                        columnAttributes["class"] = pivotStyle.cssClass.headCell + ' ' + pivotStyle.cssClass.axisX;
+                        // 20210429 : Harry : Set Cell Class By Sub Total- S
+                        columnAttributes["class"] = pivotStyle.cssClass.headCell + (value !== 'SUB-TOTAL' ? ' ' + pivotStyle.cssClass.axisX : '');;
+                        // 20210429 : Harry : Set Cell Class By Sub Total- E
                         columnAttributes["title"] = getDisplayValue(value);
                         columnAttributes["data-key"] = propertyName;
                         // columnAttributes[ "data-colIdx" ] = ( xii - range.left );		// colIdx 가 무조건 0부터 시작
@@ -3002,7 +3004,9 @@ function viewer(zs) {
                         columnAttributes = {};
 
                         // Add Property by eltriny
-                        columnAttributes["class"] = pivotStyle.cssClass.headCell + ' ' + pivotStyle.cssClass.axisX;
+                        // 20210429 : Harry : Set Cell Class By Sub Total- S
+                        columnAttributes["class"] = pivotStyle.cssClass.headCell + (value !== 'SUB-TOTAL' ? ' ' + pivotStyle.cssClass.axisX : '');
+                        // 20210429 : Harry : Set Cell Class By Sub Total - ㄸ
                         columnAttributes["title"] = getDisplayValue(value);
                         columnAttributes["data-key"] = propertyName;
 
