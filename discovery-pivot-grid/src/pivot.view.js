@@ -3006,7 +3006,7 @@ function viewer(zs) {
                         // Add Property by eltriny
                         // 20210429 : Harry : Set Cell Class By Sub Total- S
                         columnAttributes["class"] = pivotStyle.cssClass.headCell + (value !== 'SUB-TOTAL' ? ' ' + pivotStyle.cssClass.axisX : '');
-                        // 20210429 : Harry : Set Cell Class By Sub Total - ㄸ
+                        // 20210429 : Harry : Set Cell Class By Sub Total - E
                         columnAttributes["title"] = getDisplayValue(value);
                         columnAttributes["data-key"] = propertyName;
 
@@ -4463,9 +4463,13 @@ function viewer(zs) {
         Viewer.prototype.resize = function () {
             (this.timer) && (clearTimeout(this.timer));
 
-            // 20210429 : Harry : Set calculatedColumnWidth - S
-            let calculatedColumnWidth = _this6._settings.showCalculatedColumnStyle ? Viewer.SHOW_CALCULATED_COLUMN_WIDTH : 0;
-            // 20210429 : Harry : Set calculatedColumnWidth - E
+            if (!this._settings) {
+                return;
+            }
+
+            // 20210503 : Harry : Set calculatedColumnWidth - S
+            let calculatedColumnWidth = this._settings.showCalculatedColumnStyle ? Viewer.SHOW_CALCULATED_COLUMN_WIDTH : 0;
+            // 20210503 : Harry : Set calculatedColumnWidth - E
 
             const redraw = () => {
                 let widthKeys = Object.keys(this._leafColumnWidth);
