@@ -2056,6 +2056,7 @@ function viewer(zs) {
                         let index = yii * zPropMax + zpi;
                         // let rowIdx 	= ( zPropMax * ( yii - range.top ) ) + zpi;	// rowIdx 가 무조건 0부터 시작
                         let rowIdx = zPropMax * yii + zpi; // rowIdx 가 인덱스 번호대로 생성
+
                         rowAttributes = {};
                         rowAttributes["class"] = pivotStyle.cssClass.headRow;
 
@@ -2242,6 +2243,7 @@ function viewer(zs) {
                             // columnStyles["line-height"] = this.getLineHeightForValign( this._settings.header.align, cellHeight, 1 ) + "px !important";
                             columnStyles["color"] = this._settings.header.font.color;
                             columnStyles["background-color"] = this._settings.header.backgroundColor;
+
                             html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                             html.push(this._settings.zProperties[zpi].name);
                             html.push("</div>");
@@ -2253,6 +2255,7 @@ function viewer(zs) {
                     // 요약 정보 타이틀 설정 (Vertical) - Start
                     if (this._settings.totalValueStyle && yii === this._yItems.length - 1) {
                         for (let _zpi = 0; _zpi < zPropMax; _zpi++) {
+
                             rowAttributes = {};
                             rowAttributes["class"] = pivotStyle.cssClass.headRow;
                             rowAttributes["class"] = this.addClassFontStyle(rowAttributes["class"], this._settings.totalValueStyle.font);
@@ -2610,6 +2613,9 @@ function viewer(zs) {
                                             zpiProp.fieldFormat.forEach(item => {
                                                 if (context.item.COLUMNS === item.aggrColumn) {
                                                     fieldFormat = item;
+                                                    //TODO - harry
+                                                    columnStyles["color"] = fieldFormat.font ? fieldFormat.font.color : columnStyles["color"];
+                                                    columnStyles["background-color"] = fieldFormat.backgroundColor ? fieldFormat.backgroundColor : columnStyles["background-color"];
                                                 }
                                             });
                                         }
@@ -3039,7 +3045,6 @@ function viewer(zs) {
 
                         //TODO - harry
                         let xProp = this._settings.xProperties[xpi];
-                        console.log('xProp', xProp);
 
                         let propertyName = this._settings.xProperties[xpi].name;
                         let value = common.format(xItem[propertyName], this._settings.xProperties[xpi].digits);
