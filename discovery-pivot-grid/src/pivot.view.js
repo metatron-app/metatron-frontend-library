@@ -1798,6 +1798,10 @@ function viewer(zs) {
                     let prevValue = '';
                     for (let xii = range.left; xii <= range.right; xii++) {
                         let xItem = this._xItems[xii];
+
+                        //TODO - harry
+                        let xProp = this._settings.xProperties[xpi];
+
                         let propertyName = this._settings.xProperties[xpi].name;
                         let value = common.format(xItem[propertyName], this._settings.xProperties[xpi].digits);
                         let checkVal = '';
@@ -1922,6 +1926,12 @@ function viewer(zs) {
                             columnStyles["color"] = this._settings.header.font.color;
                             columnStyles["background-color"] = this._settings.header.backgroundColor;
                             columnStyles["height"] = cellHeight + "px";
+
+                            //TODO - harry
+                            if (xProp.fieldFormat) {
+                                columnStyles["color"] = xProp.fieldFormat.font ? xProp.fieldFormat.font.color : columnStyles["color"];
+                                columnStyles["background-color"] = xProp.fieldFormat.backgroundColor ? xProp.fieldFormat.backgroundColor : columnStyles["background-color"];
+                            }
                         }
                         // 20210415 : Harry : Set Column Attributes & Styles - E
 
@@ -1957,6 +1967,18 @@ function viewer(zs) {
                             return acc;
                         }, 0) + "px";
                         // 20180807 : Koo : Resize Column - E
+
+                        //TODO - harry
+                        // 원본 데이터 font, background color 설정
+                        if (!this._isPivot && xProp.fieldFormat) {
+                            let fieldFormat = xProp.fieldFormat.filter(item => item.name.toLowerCase() === value.toLowerCase()) ?
+                                xProp.fieldFormat.filter(item => item.name.toLowerCase() === value.toLowerCase())[0] : undefined;
+                            if (fieldFormat) {
+                                columnStyles["color"] = fieldFormat.font ? fieldFormat.font.color : columnStyles["color"];
+                                columnStyles["background-color"] = fieldFormat.backgroundColor ? fieldFormat.backgroundColor : columnStyles["background-color"];
+                            }
+                        }
+
                         html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                         html.push(getDisplayValue(value));
 
@@ -2060,6 +2082,10 @@ function viewer(zs) {
                         if (zpi === 0) {
                             let yItem = this._yItems[yii];
                             for (let ypi = 0; ypi < this._settings.yProperties.length; ypi++) {
+
+                                //TODO - harry
+                                let yProp = this._settings.yProperties[ypi];
+
                                 let propertyName = this._settings.yProperties[ypi].name;
                                 if (undefined === yItem[propertyName]) {
                                     // 값이 없을 때는 셀을 그리지 않는다. ( subtotal 의 하위 셀 경우 )
@@ -2147,6 +2173,12 @@ function viewer(zs) {
                                     columnStyles["width"] = frozenCellWidth + "px";
                                     columnStyles["color"] = this._settings.header.font.color;
                                     columnStyles["background-color"] = this._settings.header.backgroundColor;
+
+                                    //TODO - harry
+                                    if (yProp.fieldFormat) {
+                                        columnStyles["color"] = yProp.fieldFormat.font ? yProp.fieldFormat.font.color : columnStyles["color"];
+                                        columnStyles["background-color"] = yProp.fieldFormat.backgroundColor ? yProp.fieldFormat.backgroundColor : columnStyles["background-color"];
+                                    }
                                 }
 
                                 html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
@@ -2456,7 +2488,7 @@ function viewer(zs) {
                                         }
                                     }
                                     // 20210421 : Harry : Set subCalcKey For xItem - E
-
+                                    
                                     if (isCalcRow) {
                                         if (this.isDefaultTextAlign(this._settings.calcCellStyle.align)) {
                                             columnAttributes["class"] += ' ' + pivotStyle.cssClass.txtRight
@@ -2525,9 +2557,10 @@ function viewer(zs) {
                                         }
                                         // 20210421 : Harry : Set Sub Total Font Size & Style - E
 
+                                        //TODO - harry
                                         // 20210416 : Harry : Set subCalcKey For yItem - S
-                                        // subCalcKey는 Horizontal 기준이기 때문에 yItem에 맞추어 재설정
-                                        subCalcKey = getSubCalcKey(yItem, Viewer.DATA_COL_MODE.LEFT);
+                                        // Horizontal 그리드에서 subCalcKey는 Horizontal 기준이기 때문에 yItem에 맞추어 재설정
+                                        // subCalcKey = getSubCalcKey(yItem, Viewer.DATA_COL_MODE.LEFT);
                                         // 20210416 : Harry : Set subCalcKey For yItem - E
                                     } else if ('number' === typeof itemData) {
                                         columnAttributes["class"] += ' ' + pivotStyle.cssClass.numeric;
@@ -2576,16 +2609,30 @@ function viewer(zs) {
                                         if (!this._isPivot && zpiProp.fieldFormat.length > 0) {
                                             zpiProp.fieldFormat.forEach(item => {
                                                 if (context.item.COLUMNS === item.aggrColumn) {
-                                                fieldFormat = item;
-                                            }
-                                        });
+                                                    fieldFormat = item;
+                                                }
+                                            });
                                         }
                                         // pivot
                                         else {
                                             fieldFormat = zpiProp.fieldFormat;
+
+                                            //TODO - harry
+                                            // subCalcKey === undefined인 경우가 SUB-TOTAL이 아닌 value에 해당하므로
+                                            // 이 경우에 대해서만 fieldFormat의 color, backgroundColor를 적용함
+                                            if (!subCalcKey && fieldFormat) {
+                                                columnStyles["color"] = fieldFormat.font ? fieldFormat.font.color : columnStyles["color"];
+                                                columnStyles["background-color"] = fieldFormat.backgroundColor ? fieldFormat.backgroundColor : columnStyles["background-color"];
+                                            }
                                         }
                                     }
                                     // 20210317 : Harry : Measure Field Format Setting - E
+
+                                    //TODO - harry
+                                    // 20210506 : Harry : Set subCalcKey For yItem - S
+                                    // Horizontal 그리드에서 subCalcKey는 Horizontal 기준이기 때문에 yItem에 맞추어 재설정
+                                    subCalcKey = getSubCalcKey(yItem, Viewer.DATA_COL_MODE.LEFT);
+                                    // 20210506 : Harry : Set subCalcKey For yItem - E
 
                                     html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                                     if (zpiProp.type && 'origin' === this._settings.format.type && !this._isPivot) {
@@ -2989,6 +3036,11 @@ function viewer(zs) {
                     let prevValue = '';
                     for (let xii = range.left; xii <= range.right; xii++) {
                         let xItem = this._xItems[xii];
+
+                        //TODO - harry
+                        let xProp = this._settings.xProperties[xpi];
+                        console.log('xProp', xProp);
+
                         let propertyName = this._settings.xProperties[xpi].name;
                         let value = common.format(xItem[propertyName], this._settings.xProperties[xpi].digits);
                         let checkVal = '';
@@ -3115,6 +3167,12 @@ function viewer(zs) {
                             columnStyles["color"] = this._settings.header.font.color;
                             columnStyles["background-color"] = this._settings.header.backgroundColor;
                             columnStyles["height"] = cellHeight + "px";
+
+                            //TODO - harry
+                            if (xProp.fieldFormat) {
+                                columnStyles["color"] = xProp.fieldFormat.font ? xProp.fieldFormat.font.color : columnStyles["color"];
+                                columnStyles["background-color"] = xProp.fieldFormat.backgroundColor ? xProp.fieldFormat.backgroundColor : columnStyles["background-color"];
+                            }
                         }
                         // 20210406 : Harry : Set Column Attributes & Styles - E
 
@@ -3150,6 +3208,7 @@ function viewer(zs) {
                             return acc;
                         }, 0) + "px";
                         // 20180807 : Koo : Resize Column - E
+
                         html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                         html.push(getDisplayValue(value));
 
@@ -3364,6 +3423,10 @@ function viewer(zs) {
                     let frozenColumnStylesLeft = 0;
 
                     for (let ypi = 0; ypi < yPropMax; ypi++) {
+
+                        //TODO - harry
+                        let yProp = this._settings.yProperties[ypi];
+
                         let propertyName = this._settings.yProperties[ypi].name;
                         if (undefined === yItem[propertyName]) {
                             // 값이 없을 때는 셀을 그리지 않는다. ( subtotal 의 하위 셀 경우 )
@@ -3440,6 +3503,12 @@ function viewer(zs) {
                             columnStyles["width"] = frozenCellWidth + "px";
                             columnStyles["color"] = this._settings.header.font.color;
                             columnStyles["background-color"] = this._settings.header.backgroundColor;
+
+                            //TODO - harry
+                            if (yProp.fieldFormat) {
+                                columnStyles["color"] = yProp.fieldFormat.font ? yProp.fieldFormat.font.color : columnStyles["color"];
+                                columnStyles["background-color"] = yProp.fieldFormat.backgroundColor ? yProp.fieldFormat.backgroundColor : columnStyles["background-color"];
+                            }
                         }
 
                         html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
@@ -3840,6 +3909,13 @@ function viewer(zs) {
                                         // pivot
                                         else {
                                             fieldFormat = zpiProp.fieldFormat;
+                                            //TODO - harry
+                                            // subCalcKey === undefined인 경우가 SUB-TOTAL이 아닌 value에 해당하므로
+                                            // 이 경우에 대해서만 fieldFormat의 color, backgroundColor를 적용함
+                                            if (!subCalcKey && fieldFormat) {
+                                                columnStyles["color"] = fieldFormat.font ? fieldFormat.font.color : columnStyles["color"];
+                                                columnStyles["background-color"] = fieldFormat.backgroundColor ? fieldFormat.backgroundColor : columnStyles["background-color"];
+                                            }
                                         }
                                     }
                                     // 20210317 : Harry : Measure Field Format Setting - E
@@ -4627,6 +4703,11 @@ function viewer(zs) {
                     let totalSummaryMapKey = summaryMapKey + (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP ?  '||' + zpiProp.name : '');
                     let summaryMapValue = this.summaryMap[totalSummaryMapKey];
 
+                    //TODO - harry
+                    // 개별 measure, dimension에 따른 color 지정 우선 순위를 정해야 함
+                    // columnStyles["color"] = fieldFormat.font.color;
+                    // columnStyles["background-color"] = fieldFormat.backgroundColor;
+
                     columnStyles["left"] = (Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropIdx) + "px";
                     html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                     html.push(common.numberFormat(this.getSummaryValue(summaryMapValue, this._settings.showCalculatedColumnStyle), fieldFormat));
@@ -4638,6 +4719,11 @@ function viewer(zs) {
                 let zpiProp = this._settings.zProperties.filter(item => item.name === totalSummaryMapKey.split('||').slice(-1).join('')).length > 0 ?
                     this._settings.zProperties.filter(item => item.name === totalSummaryMapKey.split('||').slice(-1).join(''))[0] : undefined;
                 let fieldFormat = zpiProp && zpiProp.fieldFormat ? zpiProp.fieldFormat : this._settings.format;
+
+                //TODO - harry
+                // 개별 measure, dimension에 따른 color 지정 우선 순위를 정해야 함
+                // columnStyles["color"] = fieldFormat.font.color;
+                // columnStyles["background-color"] = fieldFormat.backgroundColor;
 
                 html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                 html.push(common.numberFormat(this.getSummaryValue(summaryMapValue, this._settings.showCalculatedColumnStyle), fieldFormat));
