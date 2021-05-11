@@ -1800,7 +1800,9 @@ function viewer(zs) {
                         let xItem = this._xItems[xii];
 
                         //TODO - harry
+                        // 20210511 : Harry : Set xProp (Horizontal Head Wrap) - S
                         let xProp = this._settings.xProperties[xpi];
+                        // 20210511 : Harry : Set xProp (Horizontal Head Wrap) - E
 
                         let propertyName = this._settings.xProperties[xpi].name;
                         let value = common.format(xItem[propertyName], this._settings.xProperties[xpi].digits);
@@ -1928,10 +1930,12 @@ function viewer(zs) {
                             columnStyles["height"] = cellHeight + "px";
 
                             //TODO - harry
+                            // 20210511 : Harry : Set xProp Font & Background Color Format (Horizontal Head Wrap) - S
                             if (xProp.fieldFormat) {
                                 columnStyles["color"] = xProp.fieldFormat.font ? xProp.fieldFormat.font.color : columnStyles["color"];
                                 columnStyles["background-color"] = xProp.fieldFormat.backgroundColor ? xProp.fieldFormat.backgroundColor : columnStyles["background-color"];
                             }
+                            // 20210511 : Harry : Set xProp Font & Background Color Format (Horizontal Head Wrap)- S
                         }
                         // 20210415 : Harry : Set Column Attributes & Styles - E
 
@@ -1969,7 +1973,7 @@ function viewer(zs) {
                         // 20180807 : Koo : Resize Column - E
 
                         //TODO - harry
-                        // 원본 데이터 font, background color 설정
+                        // 20210511 : Harry : Set Origin Data Font & Background Color Format (Horizontal Head Wrap) - S
                         if (!this._isPivot && xProp.fieldFormat) {
                             let fieldFormat = xProp.fieldFormat.filter(item => item.name.toLowerCase() === value.toLowerCase()) ?
                                 xProp.fieldFormat.filter(item => item.name.toLowerCase() === value.toLowerCase())[0] : undefined;
@@ -1978,6 +1982,7 @@ function viewer(zs) {
                                 columnStyles["background-color"] = fieldFormat.backgroundColor ? fieldFormat.backgroundColor : columnStyles["background-color"];
                             }
                         }
+                        // 20210511 : Harry : Set Origin Data Font & Background Color Format (Horizontal Head Wrap) - E
 
                         html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                         html.push(getDisplayValue(value));
@@ -2085,7 +2090,9 @@ function viewer(zs) {
                             for (let ypi = 0; ypi < this._settings.yProperties.length; ypi++) {
 
                                 //TODO - harry
+                                // 20210511 : Harry : Set yProp (Horizontal Body Frozen) - S
                                 let yProp = this._settings.yProperties[ypi];
+                                // 20210511 : Harry : Set yProp (Horizontal Body Frozen) - E
 
                                 let propertyName = this._settings.yProperties[ypi].name;
                                 if (undefined === yItem[propertyName]) {
@@ -2176,10 +2183,12 @@ function viewer(zs) {
                                     columnStyles["background-color"] = this._settings.header.backgroundColor;
 
                                     //TODO - harry
+                                    // 20210511 : Harry : Set yProp Font & Background Color Format (Horizontal Body Frozen) - S
                                     if (yProp.fieldFormat) {
                                         columnStyles["color"] = yProp.fieldFormat.font ? yProp.fieldFormat.font.color : columnStyles["color"];
                                         columnStyles["background-color"] = yProp.fieldFormat.backgroundColor ? yProp.fieldFormat.backgroundColor : columnStyles["background-color"];
                                     }
+                                    // 20210511 : Harry : Set yProp Font & Background Color Format (Horizontal Body Frozen) - S
                                 }
 
                                 html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
@@ -2559,12 +2568,6 @@ function viewer(zs) {
                                             }
                                         }
                                         // 20210421 : Harry : Set Sub Total Font Size & Style - E
-
-                                        //TODO - harry
-                                        // 20210416 : Harry : Set subCalcKey For yItem - S
-                                        // Horizontal 그리드에서 subCalcKey는 Horizontal 기준이기 때문에 yItem에 맞추어 재설정
-                                        // subCalcKey = getSubCalcKey(yItem, Viewer.DATA_COL_MODE.LEFT);
-                                        // 20210416 : Harry : Set subCalcKey For yItem - E
                                     } else if ('number' === typeof itemData) {
                                         columnAttributes["class"] += ' ' + pivotStyle.cssClass.numeric;
                                         // 단계별 색상 설정 추가 - Start
@@ -2614,8 +2617,10 @@ function viewer(zs) {
                                                 if (context.item.COLUMNS === item.aggrColumn) {
                                                     fieldFormat = item;
                                                     //TODO - harry
+                                                    // 20210511 : Harry : Set Pivot Data Font & Background Color Format (Horizontal Origin Data) - S
                                                     columnStyles["color"] = fieldFormat.font ? fieldFormat.font.color : columnStyles["color"];
                                                     columnStyles["background-color"] = fieldFormat.backgroundColor ? fieldFormat.backgroundColor : columnStyles["background-color"];
+                                                    // 20210511 : Harry : Set Pivot Data Font & Background Color Format (Horizontal Origin Data) - E
                                                 }
                                             });
                                         }
@@ -2624,21 +2629,22 @@ function viewer(zs) {
                                             fieldFormat = zpiProp.fieldFormat;
 
                                             //TODO - harry
-                                            // subCalcKey === undefined인 경우가 SUB-TOTAL이 아닌 value에 해당하므로
-                                            // 이 경우에 대해서만 fieldFormat의 color, backgroundColor를 적용함
+                                            // 20210511 : Harry : Set zProp Font & Background Color Format (Horizontal Pivot Data) - S
+                                            // subCalcKey 값이 할당되지 않았을 때 SUB-TOTAL이 아닌 value에 해당하는 경우이므로, 이 경우에만 fieldFormat의 font, background color를 적용
                                             if (!subCalcKey && fieldFormat) {
                                                 columnStyles["color"] = fieldFormat.font ? fieldFormat.font.color : columnStyles["color"];
                                                 columnStyles["background-color"] = fieldFormat.backgroundColor ? fieldFormat.backgroundColor : columnStyles["background-color"];
                                             }
+                                            // 20210511 : Harry : Set zProp Font & Background Color Format (Horizontal Pivot Data) - E
                                         }
                                     }
                                     // 20210317 : Harry : Measure Field Format Setting - E
 
                                     //TODO - harry
-                                    // 20210506 : Harry : Set subCalcKey For yItem - S
+                                    // 20210511 : Harry : Set subCalcKey For yItem (Horizontal) - S
                                     // Horizontal 그리드에서 subCalcKey는 Horizontal 기준이기 때문에 yItem에 맞추어 재설정
                                     subCalcKey = getSubCalcKey(yItem, Viewer.DATA_COL_MODE.LEFT);
-                                    // 20210506 : Harry : Set subCalcKey For yItem - E
+                                    // 20210511 : Harry : Set subCalcKey For yItem (Horizontal) - E
 
                                     html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                                     if (zpiProp.type && 'origin' === this._settings.format.type && !this._isPivot) {
@@ -3044,7 +3050,9 @@ function viewer(zs) {
                         let xItem = this._xItems[xii];
 
                         //TODO - harry
+                        // 20210511 : Harry : Set xProp (Vertical Head Wrap) - S
                         let xProp = this._settings.xProperties[xpi];
+                        // 20210511 : Harry : Set xProp (Vertical Head Wrap) - E
 
                         let propertyName = this._settings.xProperties[xpi].name;
                         let value = common.format(xItem[propertyName], this._settings.xProperties[xpi].digits);
@@ -3174,10 +3182,12 @@ function viewer(zs) {
                             columnStyles["height"] = cellHeight + "px";
 
                             //TODO - harry
+                            // 20210511 : Harry : Set xProp Font & Background Color Format (Vertical Head Wrap) - S
                             if (xProp.fieldFormat) {
                                 columnStyles["color"] = xProp.fieldFormat.font ? xProp.fieldFormat.font.color : columnStyles["color"];
                                 columnStyles["background-color"] = xProp.fieldFormat.backgroundColor ? xProp.fieldFormat.backgroundColor : columnStyles["background-color"];
                             }
+                            // 20210511 : Harry : Set xProp Font & Background Color Format (Vertical Head Wrap) - E
                         }
                         // 20210406 : Harry : Set Column Attributes & Styles - E
 
@@ -3430,7 +3440,9 @@ function viewer(zs) {
                     for (let ypi = 0; ypi < yPropMax; ypi++) {
 
                         //TODO - harry
+                        // 20210511 : Harry : Set yProp (Vertical Body Frozen) - S
                         let yProp = this._settings.yProperties[ypi];
+                        // 20210511 : Harry : Set yProp (Vertical Body Frozen) - E
 
                         let propertyName = this._settings.yProperties[ypi].name;
                         if (undefined === yItem[propertyName]) {
@@ -3510,10 +3522,12 @@ function viewer(zs) {
                             columnStyles["background-color"] = this._settings.header.backgroundColor;
 
                             //TODO - harry
+                            // 20210511 : Harry : Set yProp Font & Background Color Format (Vertical Body Frozen) - S
                             if (yProp.fieldFormat) {
                                 columnStyles["color"] = yProp.fieldFormat.font ? yProp.fieldFormat.font.color : columnStyles["color"];
                                 columnStyles["background-color"] = yProp.fieldFormat.backgroundColor ? yProp.fieldFormat.backgroundColor : columnStyles["background-color"];
                             }
+                            // 20210511 : Harry : Set yProp Font & Background Color Format (Vertical Body Frozen) - E
                         }
 
                         html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
@@ -3915,12 +3929,13 @@ function viewer(zs) {
                                         else {
                                             fieldFormat = zpiProp.fieldFormat;
                                             //TODO - harry
-                                            // subCalcKey === undefined인 경우가 SUB-TOTAL이 아닌 value에 해당하므로
-                                            // 이 경우에 대해서만 fieldFormat의 color, backgroundColor를 적용함
+                                            // 20210511 : Harry : Set zProp Font & Background Color Format (Vertical Pivot Data) - S
+                                            // subCalcKey 값이 할당되지 않았을 때 SUB-TOTAL이 아닌 value에 해당하는 경우이므로, 이 경우에만 fieldFormat의 font, background color를 적용
                                             if (!subCalcKey && fieldFormat) {
                                                 columnStyles["color"] = fieldFormat.font ? fieldFormat.font.color : columnStyles["color"];
                                                 columnStyles["background-color"] = fieldFormat.backgroundColor ? fieldFormat.backgroundColor : columnStyles["background-color"];
                                             }
+                                            // 20210511 : Harry : Set zProp Font & Background Color Format (Vertical Pivot Data) - E
                                         }
                                     }
                                     // 20210317 : Harry : Measure Field Format Setting - E
@@ -4708,11 +4723,6 @@ function viewer(zs) {
                     let totalSummaryMapKey = summaryMapKey + (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP ?  '||' + zpiProp.name : '');
                     let summaryMapValue = this.summaryMap[totalSummaryMapKey];
 
-                    //TODO - harry
-                    // 개별 measure, dimension에 따른 color 지정 우선 순위를 정해야 함
-                    // columnStyles["color"] = fieldFormat.font.color;
-                    // columnStyles["background-color"] = fieldFormat.backgroundColor;
-
                     columnStyles["left"] = (Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropIdx) + "px";
                     html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                     html.push(common.numberFormat(this.getSummaryValue(summaryMapValue, this._settings.showCalculatedColumnStyle), fieldFormat));
@@ -4724,11 +4734,6 @@ function viewer(zs) {
                 let zpiProp = this._settings.zProperties.filter(item => item.name === totalSummaryMapKey.split('||').slice(-1).join('')).length > 0 ?
                     this._settings.zProperties.filter(item => item.name === totalSummaryMapKey.split('||').slice(-1).join(''))[0] : undefined;
                 let fieldFormat = zpiProp && zpiProp.fieldFormat ? zpiProp.fieldFormat : this._settings.format;
-
-                //TODO - harry
-                // 개별 measure, dimension에 따른 color 지정 우선 순위를 정해야 함
-                // columnStyles["color"] = fieldFormat.font.color;
-                // columnStyles["background-color"] = fieldFormat.backgroundColor;
 
                 html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                 html.push(common.numberFormat(this.getSummaryValue(summaryMapValue, this._settings.showCalculatedColumnStyle), fieldFormat));
