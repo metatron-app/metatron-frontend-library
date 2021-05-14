@@ -1820,7 +1820,7 @@ function viewer(zs) {
 
                         // Add Property by eltriny
                         // 20210429 : Harry : Set Cell Class By Sub Total- S
-                        columnAttributes["class"] = pivotStyle.cssClass.headCell + (value !== 'SUB-TOTAL' ? ' ' + pivotStyle.cssClass.axisX : '');;
+                        columnAttributes["class"] = pivotStyle.cssClass.headCell + (value !== 'SUB-TOTAL' ? ' ' + pivotStyle.cssClass.axisX : '');
                         // 20210429 : Harry : Set Cell Class By Sub Total- E
                         columnAttributes["title"] = getDisplayValue(value);
                         columnAttributes["data-key"] = propertyName;
@@ -2014,6 +2014,12 @@ function viewer(zs) {
                             }
 
                             columnStyles = {};
+
+                            // 20210514 : Harry : Set Sort Column Styles - S
+                            columnStyles["display"] = 'flex';
+                            columnStyles["align-items"] = 'center';
+                            // 20210514 : Harry : Set Sort Column Styles - E
+
                             html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                             html.push(columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.NONE ? '-' : ( columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.ASC ? '▲' : '▼'));
                             html.push("</div>");
@@ -3248,6 +3254,12 @@ function viewer(zs) {
                             }
 
                             columnStyles = {};
+
+                            // 20210514 : Harry : Set Sort Column Styles - S
+                            columnStyles["display"] = 'flex';
+                            columnStyles["align-items"] = 'center';
+                            // 20210514 : Harry : Set Sort Column Styles - E
+
                             html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                             html.push(columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.NONE ? '-' : ( columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.ASC ? '▲' : '▼'));
                             html.push("</div>");
@@ -3363,6 +3375,12 @@ function viewer(zs) {
                             }
 
                             columnStyles = {};
+
+                            // 20210514 : Harry : Set Sort Column Styles - S
+                            columnStyles["display"] = 'flex';
+                            columnStyles["align-items"] = 'center';
+                            // 20210514 : Harry : Set Sort Column Styles - E
+
                             html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                             html.push(columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.NONE ? '-' : ( columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.ASC ? '▲' : '▼'));
                             html.push("</div>");
@@ -3734,7 +3752,7 @@ function viewer(zs) {
                                     columnAttributes["title"] = zpiProp.name + ":" + (itemData ? itemData : '');
 
                                     // 20210420 : Harry : Set subCalcKey - S
-                                    let subCalcKey = getSubCalcKey(yItem, Viewer.DATA_COL_MODE.LEFT);;
+                                    let subCalcKey = getSubCalcKey(yItem, Viewer.DATA_COL_MODE.LEFT);
                                     // 20210420 : Harry : Set subCalcKey - E
 
                                     // #20161227-02 Cell Click Event 추가 : Cell Data 설정 - Start
