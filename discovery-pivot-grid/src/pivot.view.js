@@ -2663,9 +2663,9 @@ function viewer(zs) {
                                             // 20210317 : Harry : Number Format Setting - E
                                         }
                                     } else {
-                                        // 20210317 : Harry : Number Format Setting - S
-                                        html.push(common.numberFormat(itemData, fieldFormat));
-                                        // 20210317 : Harry : Number Format Setting - E
+                                        // 20210520 : Harry : Number Format Setting (Horizontal Pivot Data) - S
+                                        html.push(fieldFormat.type ? common.numberFormat(itemData, fieldFormat) : itemData);
+                                        // 20210520 : Harry : Number Format Setting (Horizontal Pivot Data) - E
                                     }
                                     html.push("</div>");
                                     contains = true;
@@ -2779,9 +2779,9 @@ function viewer(zs) {
                                     html.push(common.numberFormat(this.getSummaryValue(summaryValueArr, this._settings.totalValueStyle), fieldFormat, zpiProp.type));
                                     // 20210413 : Harry : Number Format Setting - E
                                 } else {
-                                    // 20210413 : Harry : Number Format Setting - S
-                                    html.push(common.numberFormat(this.getSummaryValue(summaryValueArr, this._settings.totalValueStyle), fieldFormat));
-                                    // 20210413 : Harry : Number Format Setting - E
+                                    // 20210520 : Harry : Number Format Setting (Horizontal Pivot Data) - S
+                                    html.push(fieldFormat.type ? common.numberFormat(this.getSummaryValue(summaryValueArr, this._settings.totalValueStyle), fieldFormat) : this.getSummaryValue(summaryValueArr, this._settings.totalValueStyle));
+                                    // 20210520 : Harry : Number Format Setting (Horizontal Pivot Data) - E
                                 }
                                 html.push("</div>");
                             } // end for - xii
@@ -3953,9 +3953,9 @@ function viewer(zs) {
                                         html.push(common.numberFormat(itemData, fieldFormat, zpiProp.type));
                                         // 20210317 : Harry : Number Format Setting - E
                                     } else {
-                                        // 20210317 : Harry : Number Format Setting - S
-                                        html.push(common.numberFormat(itemData, fieldFormat));
-                                        // 20210317 : Harry : Number Format Setting - E
+                                        // 20210520 : Harry : Number Format Setting (Vertical Pivot Data) - S
+                                        html.push(fieldFormat.type ? common.numberFormat(itemData, fieldFormat) : itemData);
+                                        // 20210520 : Harry : Number Format Setting (Vertical Pivot Data) - E
                                     }
                                     html.push("</div>");
                                     contains = true;
@@ -4078,9 +4078,9 @@ function viewer(zs) {
                                     html.push(common.numberFormat(this.getSummaryValue(summaryValueArr, this._settings.totalValueStyle), fieldFormat, zpiProp.type));
                                     // 20210416 : Harry : Number Format Setting - E
                                 } else {
-                                    // 20210416 : Harry : Number Format Setting - S
-                                    html.push(common.numberFormat(this.getSummaryValue(summaryValueArr, this._settings.totalValueStyle), fieldFormat));
-                                    // 20210416 : Harry : Number Format Setting - E
+                                    // 20210520 : Harry : Number Format Setting (Vertical Pivot Data) - S
+                                    html.push(fieldFormat.type ? common.numberFormat(this.getSummaryValue(summaryValueArr, this._settings.totalValueStyle), fieldFormat) : this.getSummaryValue(summaryValueArr, this._settings.totalValueStyle));
+                                    // 20210520 : Harry : Number Format Setting (Vertical Pivot Data) - E
                                 }
                                 html.push("</div>");
 
