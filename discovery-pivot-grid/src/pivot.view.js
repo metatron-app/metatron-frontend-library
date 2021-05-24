@@ -2021,7 +2021,9 @@ function viewer(zs) {
                             // 20210514 : Harry : Set Sort Column Styles - E
 
                             html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
-                            html.push(columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.NONE ? '-' : ( columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.ASC ? '▲' : '▼'));
+                            // 20210524 : Harry : Set Sort Column Attributes - S
+                            html.push(columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.NONE ? '' : ( columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.ASC ? '▲' : '▼'));
+                            // 20210524 : Harry : Set Sort Column Attributes - E
                             html.push("</div>");
                         }
                         // 20210305 : Harry : Sort Column - E
@@ -3261,7 +3263,9 @@ function viewer(zs) {
                             // 20210514 : Harry : Set Sort Column Styles - E
 
                             html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
-                            html.push(columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.NONE ? '-' : ( columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.ASC ? '▲' : '▼'));
+                            // 20210524 : Harry : Set Sort Column Attributes - S
+                            html.push(columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.NONE ? '' : ( columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.ASC ? '▲' : '▼'));
+                            // 20210524 : Harry : Set Sort Column Attributes - E
                             html.push("</div>");
                         }
                         // 20210303 : Harry : Sort Column - E
@@ -3382,7 +3386,9 @@ function viewer(zs) {
                             // 20210514 : Harry : Set Sort Column Styles - E
 
                             html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
-                            html.push(columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.NONE ? '-' : ( columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.ASC ? '▲' : '▼'));
+                            // 20210524 : Harry : Set Sort Column Attributes - S
+                            html.push(columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.NONE ? '' : ( columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.ASC ? '▲' : '▼'));
+                            // 20210524 : Harry : Set Sort Column Attributes - E
                             html.push("</div>");
                             // 20210305 : Harry : Sort Column - E
 
@@ -3935,7 +3941,7 @@ function viewer(zs) {
                                         // pivot
                                         else {
                                             fieldFormat = zpiProp.fieldFormat;
-                                            
+
                                             // 20210512 : Harry : Set zProp Font & Background Color Format (Vertical Pivot Data) - S
                                             // subCalcKey 값이 할당되지 않았을 때 SUB-TOTAL이 아닌 value에 해당하는 경우이므로, 이 경우에만 fieldFormat의 font, background color를 적용
                                             if (!subCalcKey && fieldFormat) {
