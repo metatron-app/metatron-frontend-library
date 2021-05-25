@@ -1934,9 +1934,7 @@ function viewer(zs) {
                         columnAttributes = {};
 
                         // Add Property by eltriny
-                        // 20210429 : Harry : Set Cell Class By Sub Total- S
-                        columnAttributes["class"] = pivotStyle.cssClass.headCell + (value !== 'SUB-TOTAL' ? ' ' + pivotStyle.cssClass.axisX : '');
-                        // 20210429 : Harry : Set Cell Class By Sub Total- E
+                        columnAttributes["class"] = pivotStyle.cssClass.headCell + ' ' + pivotStyle.cssClass.axisX;
                         columnAttributes["title"] = getDisplayValue(value);
                         columnAttributes["data-key"] = propertyName;
                         // columnAttributes[ "data-colIdx" ] = ( xii - range.left );		// colIdx 가 무조건 0부터 시작
@@ -3227,9 +3225,7 @@ function viewer(zs) {
                         columnAttributes = {};
 
                         // Add Property by eltriny
-                        // 20210429 : Harry : Set Cell Class By Sub Total- S
-                        columnAttributes["class"] = pivotStyle.cssClass.headCell + (value !== 'SUB-TOTAL' ? ' ' + pivotStyle.cssClass.axisX : '');
-                        // 20210429 : Harry : Set Cell Class By Sub Total - E
+                        columnAttributes["class"] = pivotStyle.cssClass.headCell + ' ' + pivotStyle.cssClass.axisX;
                         columnAttributes["title"] = getDisplayValue(value);
                         columnAttributes["data-key"] = propertyName;
 
@@ -3466,9 +3462,9 @@ function viewer(zs) {
                             // z-axis 추가
                             columnAttributes = {};
 
-                            // 20210226 : Harry : X Axis Class For Sorting - S
-                            columnAttributes["class"] = pivotStyle.cssClass.headCell + ' ' + pivotStyle.cssClass.axisX;
-                            // 20210226 : Harry : X Axis Class For Sorting - E
+                            // 20210525 : Harry : X Axis Class For Sorting - S
+                            columnAttributes["class"] = pivotStyle.cssClass.headCell;
+                            // 20210525 : Harry : X Axis Class For Sorting - E
 
                             columnAttributes["title"] = this._settings.zProperties[zpi].name;
                             columnAttributes["data-key"] = 'dataAxis';
