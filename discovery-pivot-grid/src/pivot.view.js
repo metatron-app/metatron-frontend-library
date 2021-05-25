@@ -287,6 +287,10 @@ function viewer(zs) {
             this._yItems = [];
             this._dataCriteria = {};
 
+            // 20210525 : Harry : Add _rangeDataCriteria for zProperties color format - S
+            this._rangeDataCriteria = {};
+            // 20210525 : Harry : Add _rangeDataCriteria for zProperties color format - E
+
             // Add Property by eltriny - Start
             this._leafColumnWidth = {}; // 각 아이템별 Width 값을 저장 ( itemKey : width Value ) - 20180807 : Koo : Resize Column
             this._leafFrozenColumnWidth = {}; // 고정 헤더 Width 값을 저장
@@ -526,68 +530,143 @@ function viewer(zs) {
             let zProp = this._settings.zProperties;
             let showColorStep = this._settings.body.color && this._settings.body.color.showColorStep ? this._settings.body.color.showColorStep : null;
 
-            if (zProp && showColorStep) {
-                let arrColors = this._settings.body.color.stepColors;
-                let arrTextColors = this._settings.body.color.stepTextColors;
-                zProp.forEach(function (prop) {
+            // 20210525 : Harry : Set zProp Range Color Count - S
+            let zPropRangeColorCount = this._settings.zProperties.filter(item => item.fieldFormat && item.fieldFormat['font'] && item.fieldFormat['font']['rangeColor'] && item.fieldFormat['font']['rangeColor'].length > 0).length;
+            let zPropRangeBackgroundColorCount = this._settings.zProperties.filter(item => item.fieldFormat && item.fieldFormat['rangeBackgroundColor'] && item.fieldFormat['rangeBackgroundColor'].length > 0).length;
+            // 20210525 : Harry : Set zProp Range Color Count - E
 
-                    objViewer._dataCriteria[prop.name] = {
-                        max: max,
-                        min: min,
-                        range: 0,
-                        step: (arrColors && arrColors.length > 0) ? arrColors.length : arrTextColors.length,
-                        color: arrColors,
-                        textColor: arrTextColors,
-                        getStep: function (data) {
-                            let currStep = Math.floor((data - this.min) / this.range);
-                            (this.step <= currStep) && (currStep = this.step - 1);
-                            return currStep;
-                        },
-                        getTextColor: function (data) {
-                            if (this.textColor) {
-                                return this.textColor[this.getStep(data)];
-                            } else {
-                                return null;
-                            }
-                        },
-                        getColor: function (data) {
-                            if (this.color) {
-                                return this.color[this.getStep(data)];
-                            } else {
-                                return null;
-                            }
-                        },
-                        /**
-                         * 사용자 색상범위 설정
-                         * @param data 현재 컬럼의 데이터값
-                         * @param rangeColors 범위색상 데이터
-                         * @returns {string}
-                         */
-                        getUserRangeColor: function (data, rangeColors) {
+            // 20210525 : Harry : Set data criteria by zProperties - S
+            if (zProp) {
+                // 색상 설정 (body)
+                if (showColorStep) {
+                    let arrColors = this._settings.body.color.stepColors;
+                    let arrTextColors = this._settings.body.color.stepTextColors;
 
-                            let returnColor = '';
-
-                            // 범위값이 있는경우 해당 범위내의 색상으로 설정
-                            for (const item of rangeColors) {
-                                if (item.min <= data && item.max >= data) {
-                                    returnColor = item.color;
-                                    break;
+                    zProp.forEach(function (prop) {
+                        objViewer._dataCriteria[prop.name] = {
+                            max: max,
+                            min: min,
+                            range: 0,
+                            step: (arrColors && arrColors.length > 0) ? arrColors.length : arrTextColors.length,
+                            color: arrColors,
+                            textColor: arrTextColors,
+                            getStep: function (data) {
+                                let currStep = Math.floor((data - this.min) / this.range);
+                                (this.step <= currStep) && (currStep = this.step - 1);
+                                return currStep;
+                            },
+                            getTextColor: function (data) {
+                                if (this.textColor) {
+                                    return this.textColor[this.getStep(data)];
+                                } else {
+                                    return null;
                                 }
+                            },
+                            getColor: function (data) {
+                                if (this.color) {
+                                    return this.color[this.getStep(data)];
+                                } else {
+                                    return null;
+                                }
+                            },
+                            /**
+                             * 사용자 색상범위 설정
+                             * @param data 현재 컬럼의 데이터값
+                             * @param rangeColors 범위색상 데이터
+                             * @returns {string}
+                             */
+                            getUserRangeColor: function (data, rangeColors) {
+                                let returnColor = '';
+
+                                // 범위값이 있는경우 해당 범위내의 색상으로 설정
+                                for (const item of rangeColors) {
+                                    if (item.min <= data && item.max >= data) {
+                                        returnColor = item.color;
+                                        break;
+                                    }
+                                }
+
+                                // 범위이외값인경우 범위이외의값색상으로 설정
+                                if ('' === returnColor) {
+                                    returnColor = '#3c4950';
+                                }
+
+                                return returnColor;
                             }
+                        };
+                    });
+                }
 
-                            // 범위이외값인경우 범위이외의값색상으로 설정
+                // 색상 설정 (zProperties)
+                if (zPropRangeColorCount || zPropRangeBackgroundColorCount) {
+                    zProp.forEach(function (prop) {
+                        let arrColors = [];
+                        let arrTextColors = [];
 
-
-                            if ('' === returnColor) {
-                                returnColor = '#3c4950';
+                        if (prop['fieldFormat']) {
+                            if (objViewer._settings.body.color.colorTarget === 'TEXT') {
+                                arrTextColors = (prop.fieldFormat['font'] && prop.fieldFormat['font']['rangeColor']) ? prop.fieldFormat['font']['rangeColor'] : [];
+                            } else {
+                                arrColors = prop.fieldFormat['rangeBackgroundColor'] ? prop.fieldFormat['rangeBackgroundColor'] : [];
                             }
-
-                            return returnColor;
                         }
-                    };
-                });
+
+                        objViewer._rangeDataCriteria[prop.name] = {
+                            max: max,
+                            min: min,
+                            range: 0,
+                            step: (arrColors && arrColors.length > 0) ? arrColors.length : arrTextColors.length,
+                            color: arrColors,
+                            textColor: arrTextColors,
+                            getStep: function (data) {
+                                let currStep = Math.floor((data - this.min) / this.range);
+                                (this.step <= currStep) && (currStep = this.step - 1);
+                                return currStep;
+                            },
+                            getTextColor: function (data) {
+                                if (this.textColor) {
+                                    return this.textColor[this.getStep(data)];
+                                } else {
+                                    return null;
+                                }
+                            },
+                            getColor: function (data) {
+                                if (this.color) {
+                                    return this.color[this.getStep(data)];
+                                } else {
+                                    return null;
+                                }
+                            },
+                            /**
+                             * 사용자 색상범위 설정
+                             * @param data 현재 컬럼의 데이터값
+                             * @param rangeColors 범위색상 데이터
+                             * @returns {string}
+                             */
+                            getUserRangeColor: function (data, rangeColors) {
+                                let returnColor = '';
+
+                                // 범위값이 있는경우 해당 범위내의 색상으로 설정
+                                for (const item of rangeColors) {
+                                    if (item.gt <= data && item.lte >= data) {
+                                        returnColor = item.color;
+                                        break;
+                                    }
+                                }
+
+                                // 범위이외값인경우 범위이외의값색상으로 설정
+                                if ('' === returnColor) {
+                                    returnColor = '#3c4950';
+                                }
+
+                                return returnColor;
+                            }
+                        };
+                    });
+                }
             } // end if - zProp
             // zProperties를 이용하여 데이터 범위 기준 정보 형태 선언 - End
+            // 20210525 : Harry : Set data criteria by zProperties - S
 
             // Pivot 데이터여부
             // 20171130 taeho - 피봇 / 원본 데이터형태 모두 지원하도록 변경
@@ -725,7 +804,8 @@ function viewer(zs) {
 
                         context["item"] = item;
 
-                        // 데이터 임계 정보 설정 - Start
+                        // 20210525 : Harry : Set Data Criteria for Min, Max (Pivot) - S
+                        // 데이터 임계 정보 설정 (body)
                         if (showColorStep) {
                             for (let key in item) {
                                 let criteria = objViewer._dataCriteria[key];
@@ -735,8 +815,21 @@ function viewer(zs) {
                                     criteria.max = (itemData > criteria.max) ? itemData : criteria.max;
                                 }
                             }
-                        } // if - showColorStep
-                        // 데이터 임계 정보 설정 - End
+                        }
+                        // 데이터 임계 정보 설정 (zProperties)
+                        if (zPropRangeColorCount || zPropRangeBackgroundColorCount) {
+                            if (zPropRangeColorCount || zPropRangeBackgroundColorCount) {
+                                for (let key in item) {
+                                    let rangeCriteria = objViewer._rangeDataCriteria[key];
+                                    if (rangeCriteria && item.hasOwnProperty(key)) {
+                                        let itemData = item[key];
+                                        rangeCriteria.min = (itemData < rangeCriteria.min) ? itemData : rangeCriteria.min;
+                                        rangeCriteria.max = (itemData > rangeCriteria.max) ? itemData : rangeCriteria.max;
+                                    }
+                                }
+                            }
+                        }
+                        // 20210525 : Harry : Set Data Criteria for Min, Max (Pivot) - S
                     });
                     //20170811 Dolkkok - 피봇데이터기반으로 변경
                 });
@@ -814,7 +907,8 @@ function viewer(zs) {
 
                     context["item"] = item;
 
-                    // 데이터 임계 정보 설정 - Start
+                    // 20210525 : Harry : Set Data Criteria for Min, Max (Origin) - S
+                    // 데이터 임계 정보 설정 (body)
                     if (showColorStep) {
                         for (let key in item) {
                             let criteria = objViewer._dataCriteria[key];
@@ -824,8 +918,19 @@ function viewer(zs) {
                                 criteria.max = (itemData > criteria.max) ? itemData : criteria.max;
                             }
                         }
-                    } // if - showColorStep
-                    // 데이터 임계 정보 설정 - End
+                    }
+                    // 데이터 임계 정보 설정 (zProperties)
+                    if (zPropRangeColorCount || zPropRangeBackgroundColorCount) {
+                        for (let key in item) {
+                            let rangeCriteria = objViewer._rangeDataCriteria[key];
+                            if (rangeCriteria && item.hasOwnProperty(key)) {
+                                let itemData = item[key];
+                                rangeCriteria.min = (itemData < rangeCriteria.min) ? itemData : rangeCriteria.min;
+                                rangeCriteria.max = (itemData > rangeCriteria.max) ? itemData : rangeCriteria.max;
+                            }
+                        }
+                    }
+                    // 20210525 : Harry : Set Data Criteria for Min, Max (Origin) - E
                 }); // end foreach - items
             }
 
@@ -910,7 +1015,8 @@ function viewer(zs) {
             }
             // 20210226 : Harry : Total Item Reindexing - E
 
-            // 데이터 범위 정보 설정 - Start
+            // 20210525 : Harry : Set Data Criteria Range - S
+            // 데이터 범위 정보 설정 (body)
             if (showColorStep) {
                 for (let key in this._dataCriteria) {
                     if (this._dataCriteria.hasOwnProperty(key)) {
@@ -918,8 +1024,17 @@ function viewer(zs) {
                         objCriteria.range = (objCriteria.max - objCriteria.min) / objCriteria.step;
                     }
                 }
-            } // if - showColorStep
-            // 데이터 범위 정보 설정 - End
+            }
+            // 데이터 범위 정보 설정 (zProperties)
+            if (zPropRangeColorCount || zPropRangeBackgroundColorCount) {
+                for (let key in this._rangeDataCriteria) {
+                    if (this._rangeDataCriteria.hasOwnProperty(key)) {
+                        let objRangeCriteria = this._rangeDataCriteria[key];
+                        objRangeCriteria.range = (objRangeCriteria.max - objRangeCriteria.min) / objRangeCriteria.step;
+                    }
+                }
+            }
+            // 20210525 : Harry : Set Data Criteria Range - E
 
             // BodyCell 선택 정보 초기값 설정 - Start
             let dataDirectionToVertical = (Viewer.DATA_COL_MODE.LEFT === this._settings.dataColumnMode) ? 1 : 0;
@@ -1928,12 +2043,12 @@ function viewer(zs) {
                             columnStyles["background-color"] = this._settings.header.backgroundColor;
                             columnStyles["height"] = cellHeight + "px";
 
-                            // 20210512 : Harry : Set xProp Font & Background Color Format (Horizontal Head Wrap) - S
+                            // 20210525 : Harry : Set xProp Font & Background Color Format (Horizontal Head Wrap) - S
                             if (xProp.fieldFormat) {
-                                columnStyles["color"] = xProp.fieldFormat.font ? xProp.fieldFormat.font.color : columnStyles["color"];
-                                columnStyles["background-color"] = xProp.fieldFormat.backgroundColor ? xProp.fieldFormat.backgroundColor : columnStyles["background-color"];
+                                columnStyles["color"] = (xProp.fieldFormat['font'] && xProp.fieldFormat['font']['color']) ? xProp.fieldFormat['font']['color'] : columnStyles["color"];
+                                columnStyles["background-color"] = xProp.fieldFormat['backgroundColor'] ? xProp.fieldFormat['backgroundColor'] : columnStyles["background-color"];
                             }
-                            // 20210512 : Harry : Set xProp Font & Background Color Format (Horizontal Head Wrap)- S
+                            // 20210525 : Harry : Set xProp Font & Background Color Format (Horizontal Head Wrap)- S
                         }
                         // 20210415 : Harry : Set Column Attributes & Styles - E
 
@@ -1970,16 +2085,16 @@ function viewer(zs) {
                         }, 0) + "px";
                         // 20180807 : Koo : Resize Column - E
 
-                        // 20210512 : Harry : Set Origin Data Font & Background Color Format (Horizontal Head Wrap) - S
+                        // 20210525 : Harry : Set Origin Data Font & Background Color Format (Horizontal Head Wrap) - S
                         if (!this._isPivot && xProp.fieldFormat) {
                             let fieldFormat = xProp.fieldFormat.filter(item => item.name.toLowerCase() === value.toLowerCase()) ?
                                 xProp.fieldFormat.filter(item => item.name.toLowerCase() === value.toLowerCase())[0] : undefined;
                             if (fieldFormat) {
-                                columnStyles["color"] = fieldFormat.font ? fieldFormat.font.color : columnStyles["color"];
-                                columnStyles["background-color"] = fieldFormat.backgroundColor ? fieldFormat.backgroundColor : columnStyles["background-color"];
+                                columnStyles["color"] = (fieldFormat['font'] && fieldFormat['font']['color']) ? fieldFormat['font']['color'] : columnStyles["color"];
+                                columnStyles["background-color"] = fieldFormat['backgroundColor'] ? fieldFormat['backgroundColor'] : columnStyles["background-color"];
                             }
                         }
-                        // 20210512 : Harry : Set Origin Data Font & Background Color Format (Horizontal Head Wrap) - E
+                        // 20210525 : Harry : Set Origin Data Font & Background Color Format (Horizontal Head Wrap) - E
 
                         html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                         html.push(getDisplayValue(value));
@@ -2021,9 +2136,9 @@ function viewer(zs) {
                             // 20210514 : Harry : Set Sort Column Styles - E
 
                             html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
-                            // 20210524 : Harry : Set Sort Column Attributes - S
+                            // 20210525 : Harry : Set Sort Column Attributes - S
                             html.push(columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.NONE ? '' : ( columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.ASC ? '▲' : '▼'));
-                            // 20210524 : Harry : Set Sort Column Attributes - E
+                            // 20210525 : Harry : Set Sort Column Attributes - E
                             html.push("</div>");
                         }
                         // 20210305 : Harry : Sort Column - E
@@ -2186,12 +2301,12 @@ function viewer(zs) {
                                     columnStyles["color"] = this._settings.header.font.color;
                                     columnStyles["background-color"] = this._settings.header.backgroundColor;
 
-                                    // 20210512 : Harry : Set yProp Font & Background Color Format (Horizontal Body Frozen) - S
+                                    // 20210525 : Harry : Set yProp Font & Background Color Format (Horizontal Body Frozen) - S
                                     if (yProp.fieldFormat) {
-                                        columnStyles["color"] = yProp.fieldFormat.font ? yProp.fieldFormat.font.color : columnStyles["color"];
-                                        columnStyles["background-color"] = yProp.fieldFormat.backgroundColor ? yProp.fieldFormat.backgroundColor : columnStyles["background-color"];
+                                        columnStyles["color"] = (yProp.fieldFormat['font'] && yProp.fieldFormat['font']['color']) ? yProp.fieldFormat['font']['color'] : columnStyles["color"];
+                                        columnStyles["background-color"] = yProp.fieldFormat['backgroundColor'] ? yProp.fieldFormat['backgroundColor'] : columnStyles["background-color"];
                                     }
-                                    // 20210512 : Harry : Set yProp Font & Background Color Format (Horizontal Body Frozen) - S
+                                    // 20210525 : Harry : Set yProp Font & Background Color Format (Horizontal Body Frozen) - S
                                 }
 
                                 html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
@@ -2377,6 +2492,14 @@ function viewer(zs) {
                         if (showColorStep) {
                             objCriteria = this._dataCriteria[zpiProp.name];
                         }
+                        // 20210525 : Harry : Set objRangeCriteria For zProp (Horizontal Body Wrap) - S
+                        let objRangeCriteria = null;
+                        if ( zpiProp.fieldFormat && this._settings.body.color && this._settings.body.color.colorTarget &&
+                            ( ('TEXT' === this._settings.body.color.colorTarget && zpiProp.fieldFormat['font'] && zpiProp.fieldFormat['font']['rangeColor']) || ('BACKGROUND' === this._settings.body.color.colorTarget && zpiProp.fieldFormat['rangeBackgroundColor']) ) ) {
+                            objRangeCriteria = this._rangeDataCriteria[zpiProp.name];
+                        }
+                        // 20210525 : Harry : Set objRangeCriteria For zProp (Horizontal Body Wrap) - E
+
                         rowAttributes = {};
                         rowAttributes["data-rowIdx"] = rowIdx;
                         rowAttributes["class"] = pivotStyle.cssClass.bodyRow + (index % 2 === 0 ? " odd" : "");
@@ -2619,11 +2742,11 @@ function viewer(zs) {
                                             zpiProp.fieldFormat.forEach(item => {
                                                 if (context.item.COLUMNS === item.aggrColumn) {
                                                     fieldFormat = item;
-                                                    
-                                                    // 20210512 : Harry : Set Pivot Data Font & Background Color Format (Horizontal Origin Data) - S
-                                                    columnStyles["color"] = fieldFormat.font ? fieldFormat.font.color : columnStyles["color"];
-                                                    columnStyles["background-color"] = fieldFormat.backgroundColor ? fieldFormat.backgroundColor : columnStyles["background-color"];
-                                                    // 20210512 : Harry : Set Pivot Data Font & Background Color Format (Horizontal Origin Data) - E
+
+                                                    // 20210525 : Harry : Set Pivot Data Font & Background Color Format (Horizontal Origin Data) - S
+                                                    columnStyles["color"] = (fieldFormat['font'] && fieldFormat['font']['color']) ? fieldFormat['font']['color'] : columnStyles["color"];
+                                                    columnStyles["background-color"] = fieldFormat['backgroundColor'] ? fieldFormat['backgroundColor'] : columnStyles["background-color"];
+                                                    // 20210525 : Harry : Set Pivot Data Font & Background Color Format (Horizontal Origin Data) - E
                                                 }
                                             });
                                         }
@@ -2631,21 +2754,56 @@ function viewer(zs) {
                                         else {
                                             fieldFormat = zpiProp.fieldFormat;
 
-                                            // 20210512 : Harry : Set zProp Font & Background Color Format (Horizontal Pivot Data) - S
-                                            // subCalcKey 값이 할당되지 않았을 때 SUB-TOTAL이 아닌 value에 해당하는 경우이므로, 이 경우에만 fieldFormat의 font, background color를 적용
-                                            if (!subCalcKey && fieldFormat) {
-                                                columnStyles["color"] = fieldFormat.font ? fieldFormat.font.color : columnStyles["color"];
-                                                columnStyles["background-color"] = fieldFormat.backgroundColor ? fieldFormat.backgroundColor : columnStyles["background-color"];
+                                            // 20210525 : Harry : Set zProp Font & Background Color Format (Horizontal Pivot Data) - S
+                                            // SUB-TOTAL이 아닌 경우에만 fieldFormat의 rangeColor, rangeBackgroundColor를 적용
+                                            if (fieldFormat && arrParentVal.indexOf('SUB-TOTAL') < 0 && Object.values(context.item).indexOf('SUB-TOTAL') < 0) {
+                                                if ( ('TEXT' === this._settings.body.color.colorTarget && zpiProp.fieldFormat['font'] && zpiProp.fieldFormat['font']['rangeColor'])
+                                                    || ('BACKGROUND' === this._settings.body.color.colorTarget && zpiProp.fieldFormat['rangeBackgroundColor']) ) {
+                                                    let stepRangeColors = [];
+                                                    let strColor = '';
+                                                    let strTxtColor = '';
+
+                                                    if ('TEXT' === this._settings.body.color.colorTarget) {
+                                                        stepRangeColors = fieldFormat['font']['rangeColor'];
+                                                        objRangeCriteria.getTextColor(itemData);
+                                                    } else {
+                                                        stepRangeColors = fieldFormat['rangeBackgroundColor'];
+                                                        objRangeCriteria.getColor(itemData);
+                                                    }
+
+                                                    strTxtColor && (columnStyles["color"] = strTxtColor);
+                                                    strColor && (columnStyles["background-color"] = strColor);
+
+                                                    // 사용자 색상 범위설정이 있을때
+                                                    if (stepRangeColors && stepRangeColors.length > 0) {
+                                                        // 색상타입이 글자일때
+                                                        if ('TEXT' === this._settings.body.color.colorTarget) {
+                                                            strColor = '#ffffff';
+                                                            strTxtColor = objRangeCriteria.getUserRangeColor(itemData, stepRangeColors);
+                                                        }
+                                                        // 배경일때
+                                                        else {
+                                                            strColor = objRangeCriteria.getUserRangeColor(itemData, stepRangeColors);
+                                                            strTxtColor = '#ffffff';
+                                                        }
+
+                                                        strTxtColor && (columnStyles["color"] = strTxtColor);
+                                                        strColor && (columnStyles["background-color"] = strColor);
+                                                    }
+                                                } else {
+                                                    columnStyles["color"] = (fieldFormat['font'] && fieldFormat['font']['color']) ? fieldFormat['font']['color'] : columnStyles["color"];
+                                                    columnStyles["background-color"] = fieldFormat['backgroundColor'] ? fieldFormat['backgroundColor'] : columnStyles["background-color"];
+                                                }
                                             }
-                                            // 20210512 : Harry : Set zProp Font & Background Color Format (Horizontal Pivot Data) - E
+                                            // 20210525 : Harry : Set zProp Font & Background Color Format (Horizontal Pivot Data) - E
                                         }
                                     }
                                     // 20210317 : Harry : Measure Field Format Setting - E
 
-                                    // 20210512 : Harry : Set subCalcKey For yItem (Horizontal) - S
-                                    // Horizontal 그리드에서 subCalcKey는 Horizontal 기준이기 때문에 yItem에 맞추어 재설정
+                                    // 20210525 : Harry : Set subCalcKey For yItem (Horizontal) - S
+                                    // yItem에 맞추어 subCalcKey 재설정
                                     subCalcKey = getSubCalcKey(yItem, Viewer.DATA_COL_MODE.LEFT);
-                                    // 20210512 : Harry : Set subCalcKey For yItem (Horizontal) - E
+                                    // 20210525 : Harry : Set subCalcKey For yItem (Horizontal) - E
 
                                     html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                                     if (zpiProp.type && 'origin' === this._settings.format.type && !this._isPivot) {
@@ -3181,12 +3339,12 @@ function viewer(zs) {
                             columnStyles["background-color"] = this._settings.header.backgroundColor;
                             columnStyles["height"] = cellHeight + "px";
 
-                            // 20210512 : Harry : Set xProp Font & Background Color Format (Vertical Head Wrap) - S
+                            // 20210525 : Harry : Set xProp Font & Background Color Format (Vertical Head Wrap) - S
                             if (xProp.fieldFormat) {
-                                columnStyles["color"] = xProp.fieldFormat.font ? xProp.fieldFormat.font.color : columnStyles["color"];
-                                columnStyles["background-color"] = xProp.fieldFormat.backgroundColor ? xProp.fieldFormat.backgroundColor : columnStyles["background-color"];
+                                columnStyles["color"] = (xProp.fieldFormat['font'] && xProp.fieldFormat['font']['color']) ? xProp.fieldFormat['font']['color'] : columnStyles["color"];
+                                columnStyles["background-color"] = xProp.fieldFormat['backgroundColor'] ? xProp.fieldFormat['backgroundColor'] : columnStyles["background-color"];
                             }
-                            // 20210512 : Harry : Set xProp Font & Background Color Format (Vertical Head Wrap) - E
+                            // 20210525 : Harry : Set xProp Font & Background Color Format (Vertical Head Wrap) - E
                         }
                         // 20210406 : Harry : Set Column Attributes & Styles - E
 
@@ -3263,9 +3421,9 @@ function viewer(zs) {
                             // 20210514 : Harry : Set Sort Column Styles - E
 
                             html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
-                            // 20210524 : Harry : Set Sort Column Attributes - S
+                            // 20210525 : Harry : Set Sort Column Attributes - S
                             html.push(columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.NONE ? '' : ( columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.ASC ? '▲' : '▼'));
-                            // 20210524 : Harry : Set Sort Column Attributes - E
+                            // 20210525 : Harry : Set Sort Column Attributes - E
                             html.push("</div>");
                         }
                         // 20210303 : Harry : Sort Column - E
@@ -3386,9 +3544,9 @@ function viewer(zs) {
                             // 20210514 : Harry : Set Sort Column Styles - E
 
                             html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
-                            // 20210524 : Harry : Set Sort Column Attributes - S
+                            // 20210525 : Harry : Set Sort Column Attributes - S
                             html.push(columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.NONE ? '' : ( columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.ASC ? '▲' : '▼'));
-                            // 20210524 : Harry : Set Sort Column Attributes - E
+                            // 20210525 : Harry : Set Sort Column Attributes - E
                             html.push("</div>");
                             // 20210305 : Harry : Sort Column - E
 
@@ -3535,12 +3693,12 @@ function viewer(zs) {
                             columnStyles["color"] = this._settings.header.font.color;
                             columnStyles["background-color"] = this._settings.header.backgroundColor;
 
-                            // 20210512 : Harry : Set yProp Font & Background Color Format (Vertical Body Frozen) - S
+                            // 20210525 : Harry : Set yProp Font & Background Color Format (Vertical Body Frozen) - S
                             if (yProp.fieldFormat) {
-                                columnStyles["color"] = yProp.fieldFormat.font ? yProp.fieldFormat.font.color : columnStyles["color"];
-                                columnStyles["background-color"] = yProp.fieldFormat.backgroundColor ? yProp.fieldFormat.backgroundColor : columnStyles["background-color"];
+                                columnStyles["color"] = (yProp.fieldFormat['font'] && yProp.fieldFormat['font']['color']) ? yProp.fieldFormat['font']['color'] : columnStyles["color"];
+                                columnStyles["background-color"] = yProp.fieldFormat['backgroundColor'] ? yProp.fieldFormat['backgroundColor'] : columnStyles["background-color"];
                             }
-                            // 20210512 : Harry : Set yProp Font & Background Color Format (Vertical Body Frozen) - E
+                            // 20210525 : Harry : Set yProp Font & Background Color Format (Vertical Body Frozen) - E
                         }
 
                         html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
@@ -3684,6 +3842,13 @@ function viewer(zs) {
                             if (showColorStep) {
                                 objCriteria = this._dataCriteria[zpiProp.name];
                             }
+                            // 20210525 : Harry : Set objRangeCriteria For zProp (Vertical Body Wrap) - S
+                            let objRangeCriteria = null;
+                            if ( zpiProp.fieldFormat && this._settings.body.color && this._settings.body.color.colorTarget &&
+                                ( ('TEXT' === this._settings.body.color.colorTarget && zpiProp.fieldFormat['font'] && zpiProp.fieldFormat['font']['rangeColor']) || ('BACKGROUND' === this._settings.body.color.colorTarget && zpiProp.fieldFormat['rangeBackgroundColor']) ) ) {
+                                objRangeCriteria = this._rangeDataCriteria[zpiProp.name];
+                            }
+                            // 20210525 : Harry : Set objRangeCriteria For zProp (Vertical Body Wrap) - E
 
                             let xItem = this._xItems[xii];
                             let context = this._itemsContext;
@@ -3756,10 +3921,6 @@ function viewer(zs) {
 
                                     columnAttributes["data-key"] = zpiProp.name;
                                     columnAttributes["title"] = zpiProp.name + ":" + (itemData ? itemData : '');
-
-                                    // 20210420 : Harry : Set subCalcKey - S
-                                    let subCalcKey = getSubCalcKey(yItem, Viewer.DATA_COL_MODE.LEFT);
-                                    // 20210420 : Harry : Set subCalcKey - E
 
                                     // #20161227-02 Cell Click Event 추가 : Cell Data 설정 - Start
                                     let isCalcRow = false;
@@ -3942,16 +4103,56 @@ function viewer(zs) {
                                         else {
                                             fieldFormat = zpiProp.fieldFormat;
 
-                                            // 20210512 : Harry : Set zProp Font & Background Color Format (Vertical Pivot Data) - S
-                                            // subCalcKey 값이 할당되지 않았을 때 SUB-TOTAL이 아닌 value에 해당하는 경우이므로, 이 경우에만 fieldFormat의 font, background color를 적용
-                                            if (!subCalcKey && fieldFormat) {
-                                                columnStyles["color"] = fieldFormat.font ? fieldFormat.font.color : columnStyles["color"];
-                                                columnStyles["background-color"] = fieldFormat.backgroundColor ? fieldFormat.backgroundColor : columnStyles["background-color"];
+                                            // 20210525 : Harry : Set zProp Font & Background Color Format (Vertical Pivot Data) - S
+                                            // SUB-TOTAL이 아닌 경우에만 fieldFormat의 rangeColor, rangeBackgroundColor를 적용
+                                            if (fieldFormat && arrParentVal.indexOf('SUB-TOTAL') < 0 && Object.values(context.item).indexOf('SUB-TOTAL') < 0) {
+                                                if ( ('TEXT' === this._settings.body.color.colorTarget && zpiProp.fieldFormat['font'] && zpiProp.fieldFormat['font']['rangeColor'])
+                                                    || ('BACKGROUND' === this._settings.body.color.colorTarget && zpiProp.fieldFormat['rangeBackgroundColor']) ) {
+                                                    let stepRangeColors = [];
+                                                    let strColor = '';
+                                                    let strTxtColor = '';
+
+                                                    if ('TEXT' === this._settings.body.color.colorTarget) {
+                                                        stepRangeColors = fieldFormat['font']['rangeColor'];
+                                                        objRangeCriteria.getTextColor(itemData);
+                                                    } else {
+                                                        stepRangeColors = fieldFormat['rangeBackgroundColor'];
+                                                        objRangeCriteria.getColor(itemData);
+                                                    }
+
+                                                    strTxtColor && (columnStyles["color"] = strTxtColor);
+                                                    strColor && (columnStyles["background-color"] = strColor);
+
+                                                    // 사용자 색상 범위설정이 있을때
+                                                    if (stepRangeColors && stepRangeColors.length > 0) {
+                                                        // 색상타입이 글자일때
+                                                        if ('TEXT' === this._settings.body.color.colorTarget) {
+                                                            strColor = '#ffffff';
+                                                            strTxtColor = objRangeCriteria.getUserRangeColor(itemData, stepRangeColors);
+                                                        }
+                                                        // 배경일때
+                                                        else {
+                                                            strColor = objRangeCriteria.getUserRangeColor(itemData, stepRangeColors);
+                                                            strTxtColor = '#ffffff';
+                                                        }
+
+                                                        strTxtColor && (columnStyles["color"] = strTxtColor);
+                                                        strColor && (columnStyles["background-color"] = strColor);
+                                                    }
+                                                } else {
+                                                    columnStyles["color"] = (fieldFormat['font'] && fieldFormat['font']['color']) ? fieldFormat['font']['color'] : columnStyles["color"];
+                                                    columnStyles["background-color"] = fieldFormat['backgroundColor'] ? fieldFormat['backgroundColor'] : columnStyles["background-color"];
+                                                }
                                             }
-                                            // 20210512 : Harry : Set zProp Font & Background Color Format (Vertical Pivot Data) - E
+                                            // 20210525 : Harry : Set zProp Font & Background Color Format (Vertical Pivot Data) - E
                                         }
                                     }
                                     // 20210317 : Harry : Measure Field Format Setting - E
+
+                                    // 20210525 : Harry : Set subCalcKey For yItem (Vertical) - S
+                                    // yItem에 맞추어 subCalcKey 재설정
+                                    subCalcKey = getSubCalcKey(yItem, Viewer.DATA_COL_MODE.LEFT);
+                                    // 20210525 : Harry : Set subCalcKey For yItem (Vertical) - E
 
                                     html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                                     if (zpiProp.type && 'origin' === this._settings.format.type && !this._isPivot) {
@@ -4738,7 +4939,9 @@ function viewer(zs) {
 
                     columnStyles["left"] = (Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropIdx) + "px";
                     html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
-                    html.push(common.numberFormat(this.getSummaryValue(summaryMapValue, this._settings.showCalculatedColumnStyle), fieldFormat));
+                    // 20210525 : Harry : Set Summary Value by Field Format - S
+                    html.push(fieldFormat.type ? common.numberFormat(this.getSummaryValue(summaryMapValue, this._settings.showCalculatedColumnStyle), fieldFormat) : this.getSummaryValue(summaryMapValue, this._settings.showCalculatedColumnStyle));
+                    // 20210525 : Harry : Set Summary Value by Field Format - E
                     html.push("</div>");
                 }
             } else {
@@ -4749,7 +4952,9 @@ function viewer(zs) {
                 let fieldFormat = zpiProp && zpiProp.fieldFormat ? zpiProp.fieldFormat : this._settings.format;
 
                 html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
-                html.push(common.numberFormat(this.getSummaryValue(summaryMapValue, this._settings.showCalculatedColumnStyle), fieldFormat));
+                // 20210525 : Harry : Set Summary Value by Field Format - S
+                html.push(fieldFormat.type ? common.numberFormat(this.getSummaryValue(summaryMapValue, this._settings.showCalculatedColumnStyle), fieldFormat) : this.getSummaryValue(summaryMapValue, this._settings.showCalculatedColumnStyle));
+                // 20210525 : Harry : Set Summary Value by Field Format - E
                 html.push("</div>");
             }
             // 20210413 : Harry : Set summaryValue - E
