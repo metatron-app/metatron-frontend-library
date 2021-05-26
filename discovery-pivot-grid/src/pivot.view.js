@@ -530,10 +530,23 @@ function viewer(zs) {
             let zProp = this._settings.zProperties;
             let showColorStep = this._settings.body.color && this._settings.body.color.showColorStep ? this._settings.body.color.showColorStep : null;
 
-            // 20210525 : Harry : Set zProp Range Color Count - S
-            let zPropRangeColorCount = this._settings.zProperties.filter(item => item.fieldFormat && item.fieldFormat['font'] && item.fieldFormat['font']['rangeColor'] && item.fieldFormat['font']['rangeColor'].length > 0).length;
-            let zPropRangeBackgroundColorCount = this._settings.zProperties.filter(item => item.fieldFormat && item.fieldFormat['rangeBackgroundColor'] && item.fieldFormat['rangeBackgroundColor'].length > 0).length;
-            // 20210525 : Harry : Set zProp Range Color Count - E
+            // 20210526 : Harry : Set zProp Range Color Count - S
+            let zPropRangeColorCount = 0;
+            let zPropRangeBackgroundColorCount = 0;
+            //pivot
+            if (!!items.columns) {
+                zPropRangeColorCount = this._settings.zProperties.filter(item => item.fieldFormat && item.fieldFormat['font'] && item.fieldFormat['font']['rangeColor'] && item.fieldFormat['font']['rangeColor'].length > 0).length;
+                zPropRangeBackgroundColorCount = this._settings.zProperties.filter(item => item.fieldFormat && item.fieldFormat['rangeBackgroundColor'] && item.fieldFormat['rangeBackgroundColor'].length > 0).length;
+            }
+            // origin
+            else {
+                if (zProp.length > 0 && zProp[0].fieldFormat.length > 0) {
+                    let fieldFormats = zProp[0].fieldFormat;
+                    zPropRangeColorCount = fieldFormats.filter(item => item['font'] && item['font']['rangeColor'] && item['font']['rangeColor'].length > 0).length;
+                    zPropRangeBackgroundColorCount = fieldFormats.filter(item => item['rangeBackgroundColor'] && item['rangeBackgroundColor'].length > 0).length;
+                }
+            }
+            // 20210526 : Harry : Set zProp Range Color Count - E
 
             // 20210525 : Harry : Set data criteria by zProperties - S
             if (zProp) {
@@ -599,19 +612,39 @@ function viewer(zs) {
 
                 // 색상 설정 (zProperties)
                 if (zPropRangeColorCount || zPropRangeBackgroundColorCount) {
+
+                    // 20210526 : Harry : Set zProp For Origin Data - S
+                    if (!!!items.columns && zProp.length > 0 && zProp[0].fieldFormat.length > 0) {
+                        zProp = zProp[0].fieldFormat;
+                    }
+                    // 20210526 : Harry : Set zProp For Origin Data - E
+
                     zProp.forEach(function (prop) {
                         let arrColors = [];
                         let arrTextColors = [];
 
-                        if (prop['fieldFormat']) {
-                            if (objViewer._settings.body.color.colorTarget === 'TEXT') {
-                                arrTextColors = (prop.fieldFormat['font'] && prop.fieldFormat['font']['rangeColor']) ? prop.fieldFormat['font']['rangeColor'] : [];
-                            } else {
-                                arrColors = prop.fieldFormat['rangeBackgroundColor'] ? prop.fieldFormat['rangeBackgroundColor'] : [];
+                        // 20210526 : Harry : Set arrTextColors, arrColors By Data Type (Pivot/Origin) - S
+                        // pivot
+                        if (!!items.columns) {
+                            if (prop['fieldFormat']) {
+                                if (objViewer._settings.body.color.colorTarget === 'TEXT') {
+                                    arrTextColors = prop.fieldFormat['font'] && prop.fieldFormat['font']['rangeColor'] ? prop.fieldFormat['font']['rangeColor'] : [];
+                                } else {
+                                    arrColors = prop.fieldFormat['rangeBackgroundColor'] ? prop.fieldFormat['rangeBackgroundColor'] : [];
+                                }
                             }
                         }
+                        // origin
+                        else {
+                            if (objViewer._settings.body.color.colorTarget === 'TEXT') {
+                                arrTextColors = prop['font'] && prop['font']['rangeColor'] ? prop['font']['rangeColor'] : [];
+                            } else {
+                                arrColors = prop['rangeBackgroundColor'] ? prop['rangeBackgroundColor'] : [];
+                            }
+                        }
+                        // 20210526 : Harry : Set arrTextColors, arrColors By Data Type (Pivot/Origin) - E
 
-                        objViewer._rangeDataCriteria[prop.name] = {
+                        objViewer._rangeDataCriteria[(!!items.columns ? prop.name : prop.aggrColumn)] = {
                             max: max,
                             min: min,
                             range: 0,
@@ -2741,10 +2774,47 @@ function viewer(zs) {
                                                 if (context.item.COLUMNS === item.aggrColumn) {
                                                     fieldFormat = item;
 
-                                                    // 20210525 : Harry : Set Pivot Data Font & Background Color Format (Horizontal Origin Data) - S
-                                                    columnStyles["color"] = (fieldFormat['font'] && fieldFormat['font']['color']) ? fieldFormat['font']['color'] : columnStyles["color"];
-                                                    columnStyles["background-color"] = fieldFormat['backgroundColor'] ? fieldFormat['backgroundColor'] : columnStyles["background-color"];
-                                                    // 20210525 : Harry : Set Pivot Data Font & Background Color Format (Horizontal Origin Data) - E
+                                                    // 20210526 : Harry : Set Pivot Data Font & Background Color Format (Horizontal Origin Data) - S
+                                                    if ( ('TEXT' === this._settings.body.color.colorTarget && fieldFormat['font'] && fieldFormat['font']['rangeColor'])
+                                                        || ('BACKGROUND' === this._settings.body.color.colorTarget && fieldFormat['rangeBackgroundColor']) ) {
+                                                        let stepRangeColors = [];
+                                                        let strColor = '';
+                                                        let strTxtColor = '';
+
+                                                        objRangeCriteria = this._rangeDataCriteria[fieldFormat.aggrColumn];
+
+                                                        if ('TEXT' === this._settings.body.color.colorTarget) {
+                                                            stepRangeColors = fieldFormat['font']['rangeColor'];
+                                                            objRangeCriteria.getTextColor(itemData);
+                                                        } else {
+                                                            stepRangeColors = fieldFormat['rangeBackgroundColor'];
+                                                            objRangeCriteria.getColor(itemData);
+                                                        }
+
+                                                        strTxtColor && (columnStyles["color"] = strTxtColor);
+                                                        strColor && (columnStyles["background-color"] = strColor);
+
+                                                        // 사용자 색상 범위설정이 있을때
+                                                        if (stepRangeColors && stepRangeColors.length > 0) {
+                                                            // 색상타입이 글자일때
+                                                            if ('TEXT' === this._settings.body.color.colorTarget) {
+                                                                strColor = '#ffffff';
+                                                                strTxtColor = objRangeCriteria.getUserRangeColor(itemData, stepRangeColors);
+                                                            }
+                                                            // 배경일때
+                                                            else {
+                                                                strColor = objRangeCriteria.getUserRangeColor(itemData, stepRangeColors);
+                                                                strTxtColor = '#ffffff';
+                                                            }
+
+                                                            strTxtColor && (columnStyles["color"] = strTxtColor);
+                                                            strColor && (columnStyles["background-color"] = strColor);
+                                                        }
+                                                    } else {
+                                                        columnStyles["color"] = (fieldFormat['font'] && fieldFormat['font']['color']) ? fieldFormat['font']['color'] : columnStyles["color"];
+                                                        columnStyles["background-color"] = fieldFormat['backgroundColor'] ? fieldFormat['backgroundColor'] : columnStyles["background-color"];
+                                                    }
+                                                    // 20210526 : Harry : Set Pivot Data Font & Background Color Format (Horizontal Origin Data) - E
                                                 }
                                             });
                                         }
