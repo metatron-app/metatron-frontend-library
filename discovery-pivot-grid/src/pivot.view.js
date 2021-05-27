@@ -530,7 +530,7 @@ function viewer(zs) {
             let zProp = this._settings.zProperties;
             let showColorStep = this._settings.body.color && this._settings.body.color.showColorStep ? this._settings.body.color.showColorStep : null;
 
-            // 20210526 : Harry : Set zProp Range Color Count - S
+            // 20210527 : Harry : Set zProp Range Color Count - S
             let zPropRangeColorCount = 0;
             let zPropRangeBackgroundColorCount = 0;
             //pivot
@@ -540,13 +540,13 @@ function viewer(zs) {
             }
             // origin
             else {
-                if (zProp.length > 0 && zProp[0].fieldFormat.length > 0) {
+                if (zProp.length > 0 && zProp[0].fieldFormat && zProp[0].fieldFormat.length > 0) {
                     let fieldFormats = zProp[0].fieldFormat;
                     zPropRangeColorCount = fieldFormats.filter(item => item['font'] && item['font']['rangeColor'] && item['font']['rangeColor'].length > 0).length;
                     zPropRangeBackgroundColorCount = fieldFormats.filter(item => item['rangeBackgroundColor'] && item['rangeBackgroundColor'].length > 0).length;
                 }
             }
-            // 20210526 : Harry : Set zProp Range Color Count - E
+            // 20210527 : Harry : Set zProp Range Color Count - E
 
             // 20210525 : Harry : Set data criteria by zProperties - S
             if (zProp) {
