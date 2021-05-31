@@ -1742,20 +1742,20 @@ function viewer(zs) {
             // 전체 컨텐츠 너비 설정 - Start
             const widthKeys = Object.keys(this._leafColumnWidth);
             if (0 < widthKeys.length) {
-                // 20210426 : Harry : Content Size Width Setting - S
+                // 20210531 : Harry : Set Content Size Width - S
                 // contentSizeWidth에는 연산 열(calculatedColumnWidth) 너비를 추가
                 let contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0) + calculatedColumnWidth;
-
-                // 20210531 : Harry : Set currentGridWidth By Scroll - S
                 let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - frozenWidth - (this._scrollVertical && !this._scrollHorizontal ? SCROLL_WIDTH : 0);
-                // 20210531 : Harry : Set currentGridWidth By Scroll - E
 
                 if (this.IS_FILL_WIDTH && contentSizeWidth < currentGridWidth) {
                     let cellDiffWidth = (currentGridWidth - contentSizeWidth) / widthKeys.length;
                     widthKeys.forEach(item => this._leafColumnWidth[item] = this._leafColumnWidth[item] + cellDiffWidth);
                     contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
+                    this._elementBody.style.overflowX = 'hidden';
+                } else {
+                    this._elementBody.style.overflowX = 'auto';
                 }
-                // 20210426 : Harry : Content Size Width Setting - E
+                // 20210531 : Harry : Set Content Size Width - E
 
                 this._elementHeadWrap.style.width = contentSizeWidth + "px";
                 this._elementBodyWrap.style.width = contentSizeWidth + "px";
@@ -3086,20 +3086,20 @@ function viewer(zs) {
             // 전체 컨텐츠 너비 설정 - Start
             const widthKeys = Object.keys(this._leafColumnWidth);
             if (0 < widthKeys.length) {
-                // 20210426 : Harry : Content Size Width Setting - S
+                // 20210531 : Harry : Set Content Size Width - S
                 // contentSizeWidth에는 연산 열(calculatedColumnWidth) 너비를 추가
                 let contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0) + calculatedColumnWidth;
-
-                // 20210531 : Harry : Set currentGridWidth By Scroll - S
                 let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - frozenWidth - (this._scrollVertical && !this._scrollHorizontal ? SCROLL_WIDTH : 0);
-                // 20210531 : Harry : Set currentGridWidth By Scroll - E
 
                 if (this.IS_FILL_WIDTH && contentSizeWidth < currentGridWidth) {
                     let cellDiffWidth = (currentGridWidth - contentSizeWidth) / widthKeys.length;
                     widthKeys.forEach(item => this._leafColumnWidth[item] = this._leafColumnWidth[item] + cellDiffWidth);
                     contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
+                    this._elementBody.style.overflowX = 'hidden';
+                } else {
+                    this._elementBody.style.overflowX = 'auto';
                 }
-                // 20210426 : Harry : Content Size Width Setting - E
+                // 20210531 : Harry : Set Content Size Width - E
 
                 this._elementHeadWrap.style.width = contentSizeWidth + "px";
                 this._elementBodyWrap.style.width = contentSizeWidth + "px";
