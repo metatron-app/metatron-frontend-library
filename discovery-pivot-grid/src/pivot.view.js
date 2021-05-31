@@ -1633,6 +1633,12 @@ function viewer(zs) {
                     break;
                 }
             }
+
+            // 20210531 : Harry : Set Body Overflow X Attribute - S
+            // vertical 스크롤이 생성되고 horizontal 스크롤은 생성되지 않는 경우에 overflow-x hidden 적용
+            this._elementBody.style.overflowX = (this._scrollVertical && !this._scrollHorizontal) ? 'hidden' : 'auto';
+            // 20210531 : Harry : Set Body Overflow X Attribute - E
+
             let frozenWidth = frozenCellWidth * (this._settings.yProperties.length + dataDirectionToVertical * isShowDataKey);
             this._elementHead.style.top = isSetTopRemark * remarkHeight + 'px';
             this._elementHead.style.width = (this._scrollVertical ? availableSizeHead.width - SCROLL_WIDTH : availableSizeHead.width) + "px";
@@ -1640,7 +1646,11 @@ function viewer(zs) {
             this._elementBody.style.top = availableSizeHead.height + isSetTopRemark * remarkHeight + "px";
             this._elementBody.style.width = availableSizeBody.width + "px";
             this._elementBody.style.height = availableSizeBody.height + "px";
-            this._elementHeadWrap.style.width = contentSize.width - frozenWidth + "px";
+
+            // 20210531 : Harry : Set _elementHeadWrap Width By Scroll - S
+            this._elementHeadWrap.style.width = (this._scrollVertical && !this._scrollHorizontal ? contentSize.width - frozenWidth - SCROLL_WIDTH : contentSize.width - frozenWidth) + "px";
+            // 20210531 : Harry : Set _elementHeadWrap Width By Scroll - E
+
             this._elementHeadWrap.style.height = availableSizeHead.height - 1 + "px"; // line 표시를 위해 1px 빼줌
             this._elementHeadWrap.style.left = frozenWidth + "px";
             this._elementHeadFrozen.style.width = frozenWidth + "px";
@@ -1656,7 +1666,10 @@ function viewer(zs) {
                 // 20210409 : Harry : Set Head Calculated Column - E
             }
 
-            this._elementBodyWrap.style.width = contentSize.width - frozenWidth + "px";
+            // 20210531 : Harry : Set _elementBodyWrap Width By Scroll - S
+            this._elementBodyWrap.style.width = (this._scrollVertical && !this._scrollHorizontal ? contentSize.width - frozenWidth - SCROLL_WIDTH : contentSize.width - frozenWidth) + "px";
+            // 20210531 : Harry : Set _elementBodyWrap Width By Scroll - E
+
             this._elementBodyWrap.style.height = contentSize.height + "px";
             this._elementBodyWrap.style.left = frozenWidth + "px";
             this._elementBodyFrozen.style.width = frozenWidth + "px";
@@ -1732,7 +1745,10 @@ function viewer(zs) {
                 // 20210426 : Harry : Content Size Width Setting - S
                 // contentSizeWidth에는 연산 열(calculatedColumnWidth) 너비를 추가
                 let contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0) + calculatedColumnWidth;
-                let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - frozenWidth;
+
+                // 20210531 : Harry : Set currentGridWidth By Scroll - S
+                let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - frozenWidth - (this._scrollVertical && !this._scrollHorizontal ? SCROLL_WIDTH : 0);
+                // 20210531 : Harry : Set currentGridWidth By Scroll - E
 
                 if (this.IS_FILL_WIDTH && contentSizeWidth < currentGridWidth) {
                     let cellDiffWidth = (currentGridWidth - contentSizeWidth) / widthKeys.length;
@@ -1747,7 +1763,11 @@ function viewer(zs) {
                 // this._leafColumnWidth = {}; // 초기화
                 let cnt = this._xItems.length;
                 0 === cnt && (cnt = 1);
-                const contentWidth = this._elementBody.style.width.replace(/px/gi, '') * 1 - frozenWidth - calculatedColumnWidth;
+
+                // 20210531 : Harry : Set contentWidth By Scroll - S
+                const contentWidth = this._elementBody.style.width.replace(/px/gi, '') * 1 - frozenWidth - calculatedColumnWidth - (this._scrollVertical && !this._scrollHorizontal ? SCROLL_WIDTH : 0);
+                // 20210531 : Harry : Set contentWidth By Scroll - S
+
                 if (contentWidth > cnt * cellWidth) {
                     cellWidth = contentWidth / cnt;
                     this._elementHeadWrap.style.width = contentWidth + "px";
@@ -2775,8 +2795,8 @@ function viewer(zs) {
                                                     fieldFormat = item;
 
                                                     // 20210526 : Harry : Set Pivot Data Font & Background Color Format (Horizontal Origin Data) - S
-                                                    if ( ('TEXT' === this._settings.body.color.colorTarget && fieldFormat['font'] && fieldFormat['font']['rangeColor'])
-                                                        || ('BACKGROUND' === this._settings.body.color.colorTarget && fieldFormat['rangeBackgroundColor']) ) {
+                                                    if ((this._settings.body.color && 'TEXT' === this._settings.body.color.colorTarget && fieldFormat['font'] && fieldFormat['font']['rangeColor'])
+                                                        || (this._settings.body.color && 'BACKGROUND' === this._settings.body.color.colorTarget && fieldFormat['rangeBackgroundColor']) ) {
                                                         let stepRangeColors = [];
                                                         let strColor = '';
                                                         let strTxtColor = '';
@@ -3069,7 +3089,10 @@ function viewer(zs) {
                 // 20210426 : Harry : Content Size Width Setting - S
                 // contentSizeWidth에는 연산 열(calculatedColumnWidth) 너비를 추가
                 let contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0) + calculatedColumnWidth;
-                let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - frozenWidth;
+
+                // 20210531 : Harry : Set currentGridWidth By Scroll - S
+                let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - frozenWidth - (this._scrollVertical && !this._scrollHorizontal ? SCROLL_WIDTH : 0);
+                // 20210531 : Harry : Set currentGridWidth By Scroll - E
 
                 if (this.IS_FILL_WIDTH && contentSizeWidth < currentGridWidth) {
                     let cellDiffWidth = (currentGridWidth - contentSizeWidth) / widthKeys.length;
@@ -3083,7 +3106,11 @@ function viewer(zs) {
             } else if (this.IS_FILL_WIDTH) {
                 // this._leafColumnWidth = {}; // 초기화
                 const cnt = this._xItems.length * zPropMax;
-                const contentWidth = this._elementBody.style.width.replace(/px/gi, '') * 1 - frozenWidth - calculatedColumnWidth;
+
+                // 20210531 : Harry : Set contentWidth By Scroll - S
+                const contentWidth = this._elementBody.style.width.replace(/px/gi, '') * 1 - frozenWidth - calculatedColumnWidth - (this._scrollVertical && !this._scrollHorizontal ? SCROLL_WIDTH : 0);
+                // 20210531 : Harry : Set contentWidth By Scroll - E
+
                 if (contentWidth > cnt * cellWidth) {
                     cellWidth = contentWidth / cnt;
                     this._elementHeadWrap.style.width = contentWidth + "px";
