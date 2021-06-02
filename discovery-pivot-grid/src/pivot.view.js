@@ -3093,10 +3093,6 @@ function viewer(zs) {
                 let contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
                 let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - frozenWidth - calculatedColumnWidth - (this._scrollVertical && !this._scrollHorizontal ? SCROLL_WIDTH : 0);
 
-                //TODO - harry
-                console.log('before contentSizeWidth', contentSizeWidth);
-                console.log('before currentGridWidth', currentGridWidth);
-
                 if (this.IS_FILL_WIDTH && contentSizeWidth < currentGridWidth) {
                     let cellDiffWidth = (currentGridWidth - contentSizeWidth) / widthKeys.length;
                     widthKeys.forEach(item => this._leafColumnWidth[item] = this._leafColumnWidth[item] + cellDiffWidth);
@@ -3106,10 +3102,6 @@ function viewer(zs) {
                     this._elementBody.style.overflowX = 'auto';
                 }
                 // 20210531 : Harry : Set Content Size Width - E
-
-                //TODO - harry
-                console.log('after contentSizeWidth', contentSizeWidth);
-                console.log('after currentGridWidth', currentGridWidth);
 
                 this._elementHeadWrap.style.width = contentSizeWidth + "px";
                 this._elementBodyWrap.style.width = contentSizeWidth + "px";
@@ -4908,10 +4900,6 @@ function viewer(zs) {
                 let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - (this._elementBodyFrozen.style.width.replace(/px/gi, '') * 1) - calculatedColumnWidth - (this._scrollVertical && !this._scrollHorizontal ? SCROLL_WIDTH : 0);
 
                 //TODO - harry
-                console.log('resize before contentSizeWidth', contentSizeWidth);
-                console.log('resize before currentGridWidth', currentGridWidth);
-
-                //TODO - harry
                 // _scrollVertical은 SCROLL_WIDTH 적용해야하는 경우에 사용
                 // _scrollHorizontal 여부만 확인
                 // if (contentSizeWidth <= currentGridWidth && 0 < widthKeys.length) {
@@ -4925,10 +4913,6 @@ function viewer(zs) {
                         this._leafColumnWidth[key] = this._leafColumnWidth[key] + cellDiffWidth;
                     });
                 }
-
-                //TODO - harry
-                console.log('resize after contentSizeWidth', contentSizeWidth);
-                console.log('resize after currentGridWidth', currentGridWidth);
 
                 this.arrange();
             };
