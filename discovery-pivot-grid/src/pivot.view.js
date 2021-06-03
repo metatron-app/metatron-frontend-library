@@ -4951,8 +4951,8 @@ function viewer(zs) {
 
         Viewer.prototype.arrangeFrozenColumnRelatedElements = function () {
             let _this2 = this;
-            let frozenWidthWidthKeys = Object.keys(this._leafFrozenColumnWidth);
-            let frozenWidth = frozenWidthWidthKeys.reduce(function (acc, item) {
+            let frozenWidthKeys = Object.keys(this._leafFrozenColumnWidth);
+            let frozenWidth = frozenWidthKeys.reduce(function (acc, item) {
                 return acc + Number(_this2._leafFrozenColumnWidth[item]);
             }, 0);
 
