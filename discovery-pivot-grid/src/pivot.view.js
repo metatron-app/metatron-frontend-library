@@ -294,6 +294,8 @@ function viewer(zs) {
             // Add Property by eltriny - Start
             this._leafColumnWidth = {}; // 각 아이템별 Width 값을 저장 ( itemKey : width Value ) - 20180807 : Koo : Resize Column
             this._leafFrozenColumnWidth = {}; // 고정 헤더 Width 값을 저장
+            //TODO - harry
+            this._leafCalculatedColumnWidth = {}; // 열 총합 Width 값을 저장
 
             this._axisDataset = [];
             this._selectedAxis = null;
@@ -1352,6 +1354,11 @@ function viewer(zs) {
                         objViewer._leafFrozenColumnWidth[strLeafColName] = dragWidth;
                     }
 
+                    //TODO - harry
+                    if (objViewer._leafCalculatedColumnWidth[strLeafColName]) {
+                        objViewer._leafCalculatedColumnWidth[strLeafColName] = dragWidth;
+                    }
+
                     let widthKeys = Object.keys(objViewer._leafColumnWidth);
                     let contentSizeWidth = widthKeys.reduce(function (acc, item) {
                         return acc + Number(objViewer._leafColumnWidth[item]);
@@ -1718,6 +1725,8 @@ function viewer(zs) {
             let html = [];
             let leafColWidth = this._leafColumnWidth; // 20180807 : Koo : Resize Column - S
             let leafFrozenColWidth = this._leafFrozenColumnWidth;
+            //TODO - harry
+            let leafCalcColWidth = this._leafCalculatedColumnWidth;
             let cellWidth = this._settings.cellWidth;
             let cellHeight = this._settings.cellHeight;
             let xPropMax = this._settings.xProperties.length;
@@ -3062,6 +3071,8 @@ function viewer(zs) {
             let html = [];
             let leafColWidth = this._leafColumnWidth; // 20180807 : Koo : Resize Column - S
             let leafFrozenColWidth = this._leafFrozenColumnWidth;
+            //TODO - harry
+            let leafCalcColWidth = this._leafCalculatedColumnWidth;
             let cellWidth = this._settings.cellWidth;
             let cellHeight = this._settings.cellHeight;
             let xPropMax = this._settings.xProperties.length;
@@ -5060,6 +5071,32 @@ function viewer(zs) {
             let zPropCnt = this._settings.zProperties.length;
             let totalFrozenHeightCnt = frozenHeightCnt - (zPropTitleCnt && this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP ? zPropTitleCnt : 0);
 
+            //TODO - harry
+            let calculatedWidthKeys = Object.keys(this._leafCalculatedColumnWidth);
+            let calculatedWidth = calculatedWidthKeys.reduce(function (acc, item) {
+                return acc + Number(this._leafCalculatedColumnWidth[item]);
+            }, 0);
+
+            //TODO - harry
+            // this._elementHeadWrap.style.left = calculatedWidth + "px";
+            // this._elementHeadFrozen.style.width = calculatedWidth + "px";
+            //
+            // this._elementBodyWrap.style.left = calculatedWidth + "px";
+            // this._elementBodyFrozen.style.width = calculatedWidth + "px";
+            //
+            // if (_this2._settings.showCalculatedColumnStyle) {
+            //     let widthKeys = Object.keys(this._leafColumnWidth);
+            //     let contentSizeWidth = widthKeys.reduce(function (acc, item) {
+            //         return acc + Number(_this2._leafColumnWidth[item]);
+            //     }, 0);
+            //
+            //     this._elementHeadCalculatedColumn.style.left = contentSizeWidth + calculatedWidth - 1 + "px";
+            //     // TODO css 로 따로 빼야...
+            //     this._elementHeadCalculatedColumn.style["border-left"] = "1px solid #dddddd";
+            //
+            //     this._elementBodyCalculatedColumn.style.left = contentSizeWidth + calculatedWidth + "px";
+            // }
+
             // row setting
             let rowAttributes = {};
             rowAttributes["class"] = pivotStyle.cssClass.headRow;
@@ -5080,11 +5117,23 @@ function viewer(zs) {
             columnStyles["width"] = ( index < totalFrozenHeightCnt && this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP ? Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropCnt : Viewer.SHOW_CALCULATED_COLUMN_WIDTH ) + "px";
             columnStyles["height"] = cellHeight + "px";
 
+            //TODO - harry
+            let resizeColumnAttributes = {};
+            let resizeColumnStyles = {};
+
             // 20210409 : Harry : Set Caculated Column Head by showAxisZ - S
             if (index < totalFrozenHeightCnt) {
                 columnStyles["color"] = this._settings.showCalculatedColumnStyle.font.color;
                 columnStyles["background-color"] = this._settings.showCalculatedColumnStyle.backgroundColor;
                 html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
+
+                //TODO - harry
+                resizeColumnAttributes = {};
+                resizeColumnStyles = {};
+                resizeColumnAttributes["class"] = pivotStyle.cssClass.resizeHandle;
+                resizeColumnAttributes["draggable"] = "true";
+                html.push("<div " + common.attributesString(resizeColumnAttributes, resizeColumnStyles) + "></div>");
+
                 if (index === totalFrozenHeightCnt - 1) {
                     html.push(!this._settings.showCalculatedColumnStyle.label || '' === this._settings.showCalculatedColumnStyle.label
                         ? pivotStyle.summaryLabel[this._settings.showCalculatedColumnStyle.aggregationType] : this._settings.showCalculatedColumnStyle.label);
@@ -5095,6 +5144,14 @@ function viewer(zs) {
                     columnStyles["left"] = Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropIdx + "px";
                     html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                     html.push(this._settings.zProperties[zPropIdx].name);
+
+                    //TODO - harry
+                    resizeColumnAttributes = {};
+                    resizeColumnStyles = {};
+                    resizeColumnAttributes["class"] = pivotStyle.cssClass.resizeHandle;
+                    resizeColumnAttributes["draggable"] = "true";
+                    html.push("<div " + common.attributesString(resizeColumnAttributes, resizeColumnStyles) + "></div>");
+
                     html.push("</div>");
                 }
             }
