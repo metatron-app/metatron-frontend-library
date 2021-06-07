@@ -295,7 +295,9 @@ function viewer(zs) {
             this._leafColumnWidth = {}; // 각 아이템별 Width 값을 저장 ( itemKey : width Value ) - 20180807 : Koo : Resize Column
             this._leafFrozenColumnWidth = {}; // 고정 헤더 Width 값을 저장
             //TODO - harry
+            // 20210607 : Harry : Add Leaf Calculated Column Width - S
             this._leafCalculatedColumnWidth = {}; // 열 총합 Width 값을 저장
+            // 20210607 : Harry : Add Leaf Calculated Column Width - E
 
             this._axisDataset = [];
             this._selectedAxis = null;
@@ -1137,11 +1139,17 @@ function viewer(zs) {
 
             //TODO - harry
             // Set zProperties For leafColWidth
-            this._settings.zProperties.map(item => item.name).forEach(zProp => {
-                leafColWidth[zProp] = Viewer.SHOW_CALCULATED_COLUMN_WIDTH;
-            });
+            if (this._settings.showCalculatedColumnStyle) {
+                if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP) {
+                    this._settings.zProperties.map(item => item.name).forEach(zProp => {
+                        leafColWidth['TOTAL||' + zProp] = Viewer.SHOW_CALCULATED_COLUMN_WIDTH;
+                    });
+                } else {
+                    leafColWidth['TOTAL'] = Viewer.SHOW_CALCULATED_COLUMN_WIDTH;
+                }
+            }
 
-            // Horizontal에서 zProp을 표시하는 경우에는 추가해줌 (leafColWidth)
+            // Horizontal에서 zProp을 표시하는 경우 (leafColWidth)
             if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.LEFT && this._settings.body.showAxisZ) {
                 leafColWidth[Viewer.FROZEN_COLUMN_ADDITIONAL_KEY + this._settings.yProperties.length] = this._settings.cellWidth;
             }
@@ -1158,18 +1166,37 @@ function viewer(zs) {
                 if (objLeafColumnWidthKeys.length > 0) {
                     objLeafColumnWidthKeys.forEach(key => {
                         if (key && this._settings.yProperties.findIndex(item => item.name === key) < 0) {
-                            if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.LEFT && this._settings.body.showAxisZ
-                                && key === (Viewer.FROZEN_COLUMN_ADDITIONAL_KEY + this._settings.yProperties.length)) {
-                                this._leafFrozenColumnWidth[key] = Number(objLeafColumnWidth[key]);
-                            } else {
-                                this._leafColumnWidth[key] = Number(objLeafColumnWidth[key]);
+                            if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.LEFT) {
+                                //TODO - harry
+                                // 20210607 : Harry : Set Leaf Column Width (Horizontal) - S
+                                // Horizontal에서 zProp을 표시하는 경우 (leafFrozenColumnWidth)
+                                if (this._settings.body.showAxisZ && key === (Viewer.FROZEN_COLUMN_ADDITIONAL_KEY + this._settings.yProperties.length)) {
+                                    this._leafFrozenColumnWidth[key] = Number(objLeafColumnWidth[key]);
+                                }
+                                // Horizontal에서 열총합을 표시하는 경우 (leafCalculatedColumnWidth)
+                                else if (this._settings.showCalculatedColumnStyle && key && 'TOTAL' === key) {
+                                    this._leafCalculatedColumnWidth[key] = Number(objLeafColumnWidth[key]);
+                                }
+                                // Horizontal body 영역 column width 설정 (leafColumnWidth)
+                                else {
+                                    this._leafColumnWidth[key] = Number(objLeafColumnWidth[key]);
+                                }
+                                // 20210607 : Harry : Set Leaf Column Width (Horizontal) - E
+                            } else if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP) {
+                                //TODO - harry
+                                // 20210607 : Harry : Set Leaf Column Width (Vertical) - S
+                                // Vertical에서 열총합을 표시하는 경우 (leafCalculatedColumnWidth)
+                                if (this._settings.showCalculatedColumnStyle && key && this._settings.zProperties.findIndex(item => 'TOTAL||' + item.name === key) > -1) {
+                                    this._leafCalculatedColumnWidth[key] = Number(objLeafColumnWidth[key]);
+                                }
+                                // Vertical body 영역 column width 설정 (leafColumnWidth)
+                                else {
+                                    this._leafColumnWidth[key] = Number(objLeafColumnWidth[key]);
+                                }
+                                // 20210607 : Harry : Set Leaf Column Width (Vertical) - E
                             }
                         } else if (key && this._settings.yProperties.findIndex(item => item.name === key) > -1) {
                             this._leafFrozenColumnWidth[key] = Number(objLeafColumnWidth[key]);
-                        }
-                        //TODO - harry
-                        else if (key && this._settings.zProperties.findIndex(item => item.name === key) > -1) {
-                            this._leafCalculatedColumnWidth[key] = Number(objLeafColumnWidth[key]);
                         }
                     });
                 }
@@ -1365,9 +1392,11 @@ function viewer(zs) {
                     }
 
                     //TODO - harry
+                    // 20210607 : Harry : Set Drag Width For Leaf Calculated Column Width - S
                     if (objViewer._leafCalculatedColumnWidth[strLeafColName]) {
                         objViewer._leafCalculatedColumnWidth[strLeafColName] = dragWidth;
                     }
+                    // 20210607 : Harry : Set Drag Width For Leaf Calculated Column Width - E
 
                     let widthKeys = Object.keys(objViewer._leafColumnWidth);
                     let contentSizeWidth = widthKeys.reduce(function (acc, item) {
@@ -1674,13 +1703,14 @@ function viewer(zs) {
             this._elementHeadFrozen.style.height = availableSizeHead.height - 1 + "px"; // line 표시를 위해 1px 빼줌
 
             if (this._settings.showCalculatedColumnStyle) {
-                // 20210409 : Harry : Set Head Calculated Column - S
+                //TODO - harry
+                // 20210607 : Harry : Set Head & Body Calculated Column - S
                 zPropCnt = zPropCnt ? zPropCnt : 1;
                 this._elementHeadCalculatedColumn.style.width = (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP ? Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropCnt : Viewer.SHOW_CALCULATED_COLUMN_WIDTH) + "px";
-                this._elementHeadCalculatedColumn.style.height = availableSizeHead.height - 1 + "px";
+                this._elementHeadCalculatedColumn.style.height = availableSizeHead.height - 1 + "px";  // line 표시를 위해 1px 빼줌
                 this._elementBodyCalculatedColumn.style.width = (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP ? Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropCnt : Viewer.SHOW_CALCULATED_COLUMN_WIDTH) + "px";
-                this._elementBodyCalculatedColumn.style.height = availableSizeHead.height - 1 + "px";
-                // 20210409 : Harry : Set Head Calculated Column - E
+                this._elementBodyCalculatedColumn.style.height = availableSizeBody.height + "px";
+                // 20210607 : Harry : Set Head & Body Calculated Column - E
             }
 
             // 20210531 : Harry : Set _elementBodyWrap Width By Scroll - S
@@ -1736,7 +1766,9 @@ function viewer(zs) {
             let leafColWidth = this._leafColumnWidth; // 20180807 : Koo : Resize Column - S
             let leafFrozenColWidth = this._leafFrozenColumnWidth;
             //TODO - harry
-            let leafCalcColWidth = this._leafCalculatedColumnWidth;
+            // 20210607 : Harry : Set leafCalculatedColWidth - S
+            let leafCalculatedColWidth = this._leafCalculatedColumnWidth;
+            // 20210607 : Harry : Set leafCalculatedColWidth - E
             let cellWidth = this._settings.cellWidth;
             let cellHeight = this._settings.cellHeight;
             let xPropMax = this._settings.xProperties.length;
@@ -1912,6 +1944,21 @@ function viewer(zs) {
             // x축 - y축이 중첩되는 고정 영역 - End
 
             if (this._settings.showCalculatedColumnStyle) {
+                //TODO - harry
+                // 20210607 : Harry : Set Head & Body Calculated Column Width - S
+                'undefined' === typeof leafCalculatedColWidth['TOTAL'] && (leafCalculatedColWidth['TOTAL'] = Viewer.SHOW_CALCULATED_COLUMN_WIDTH);
+
+                let calculatedWidthKeys = Object.keys(leafCalculatedColWidth);
+                let calculatedWidth = calculatedWidthKeys.reduce(function (acc, item) {
+                    return acc + Number(leafCalculatedColWidth[item]);
+                }, 0);
+
+                if (calculatedWidthKeys && calculatedWidth) {
+                    this._elementHeadCalculatedColumn.style.width = calculatedWidth + "px";
+                    this._elementBodyCalculatedColumn.style.width = calculatedWidth + "px";
+                }
+                // 20210607 : Harry : Set Head & Body Calculated Column Width - E
+
                 // 연산 열 헤더 추가
                 html.length = 0;
                 // 20210409 : Harry : Set Head Calculated Column - S
@@ -3082,7 +3129,9 @@ function viewer(zs) {
             let leafColWidth = this._leafColumnWidth; // 20180807 : Koo : Resize Column - S
             let leafFrozenColWidth = this._leafFrozenColumnWidth;
             //TODO - harry
+            // 20210607 : Harry : Set leafCalculatedColWidth - S
             let leafCalculatedColWidth = this._leafCalculatedColumnWidth;
+            // 20210607 : Harry : Set leafCalculatedColWidth - E
             let cellWidth = this._settings.cellWidth;
             let cellHeight = this._settings.cellHeight;
             let xPropMax = this._settings.xProperties.length;
@@ -3100,10 +3149,10 @@ function viewer(zs) {
             // 20210331 : Harry : Frozen Width Setting - E
 
             //TODO - harry
-            // 20210409 : Harry : Set Calculated Column Width - S
-            let calculatedColumnWidth = (Object.keys(leafCalculatedColWidth).length) ? this._settings.zProperties.reduce((acc, item) => { return acc + Number(leafCalculatedColWidth[item.name]) }, 0)
+            // 20210607 : Harry : Set Calculated Column Width - S
+            let calculatedColumnWidth = (Object.keys(leafCalculatedColWidth).length) ? this._settings.zProperties.reduce((acc, item) => { return acc + Number(leafCalculatedColWidth['TOTAL||' + item.name]) }, 0)
                                         : (this._settings.showCalculatedColumnStyle ? (Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropMax) : 0);
-            // 20210409 : Harry : Set Calculated Column Width - E
+            // 20210607 : Harry : Set Calculated Column Width - E
 
             // 전체 컨텐츠 너비 설정 - Start
             const widthKeys = Object.keys(this._leafColumnWidth);
@@ -3251,21 +3300,21 @@ function viewer(zs) {
 
             if (this._settings.showCalculatedColumnStyle) {
                 //TODO - harry
+                // 20210607 : Harry : Set Head & Body Calculated Column Width - S
                 this._settings.zProperties.forEach(zProp => {
-                    'undefined' === typeof leafCalculatedColWidth[zProp.name] && (leafCalculatedColWidth[zProp.name] = Viewer.SHOW_CALCULATED_COLUMN_WIDTH);
+                    'undefined' === typeof leafCalculatedColWidth['TOTAL||' + zProp.name] && (leafCalculatedColWidth['TOTAL||' + zProp.name] = Viewer.SHOW_CALCULATED_COLUMN_WIDTH);
                 });
 
-                //TODO - harry
                 let calculatedWidthKeys = Object.keys(leafCalculatedColWidth);
                 let calculatedWidth = calculatedWidthKeys.reduce(function (acc, item) {
                     return acc + Number(leafCalculatedColWidth[item]);
                 }, 0);
 
-                //TODO - harry
                 if (calculatedWidthKeys && calculatedWidth) {
                     this._elementHeadCalculatedColumn.style.width = calculatedWidth + "px";
                     this._elementBodyCalculatedColumn.style.width = calculatedWidth + "px";
                 }
+                // 20210607 : Harry : Set Head & Body Calculated Column Width - E
 
                 // 연산 열 헤더 추가
                 html.length = 0;
@@ -5063,8 +5112,9 @@ function viewer(zs) {
 
             // 20210413 : Harry : Set summaryValue - S
             if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP) {
-                //TODO - harry
+                // 20210607 : Harry : Set calculatedColumnStyleLeft (Vertical/Body) - S
                 let calculatedColumnStyleLeft = 0;
+                // 20210607 : Harry : Set calculatedColumnStyleLeft (Vertical/Body) - E
 
                 for (let zPropIdx = 0; zPropIdx < zPropCnt; zPropIdx++) {
                     let zpiProp = _this._settings.zProperties[zPropIdx];
@@ -5075,11 +5125,14 @@ function viewer(zs) {
                     let summaryMapValue = _this.summaryMap[totalSummaryMapKey];
 
                     //TODO - harry
-                    _this._leafCalculatedColumnWidth[this._settings.zProperties[zPropIdx].name] || ( _this._leafCalculatedColumnWidth[this._settings.zProperties[zPropIdx].name] = Viewer.SHOW_CALCULATED_COLUMN_WIDTH );
-                    let calculatedColWidth = _this._leafCalculatedColumnWidth[this._settings.zProperties[zPropIdx].name];
+                    // 20210607 : Harry : Set Calculated Column Width (Vertical/Body) - S
+                    let calcColWidthKey = 'TOTAL||' + zpiProp.name;
 
-                    //TODO - harry
-                    columnStyles["width"] = ( _this._leafCalculatedColumnWidth[_this._settings.zProperties[zPropIdx].name] ? _this._leafCalculatedColumnWidth[_this._settings.zProperties[zPropIdx].name] : (Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropIdx) ) + "px";
+                    _this._leafCalculatedColumnWidth[calcColWidthKey] || ( _this._leafCalculatedColumnWidth[calcColWidthKey] = Viewer.SHOW_CALCULATED_COLUMN_WIDTH );
+                    let calculatedColWidth = _this._leafCalculatedColumnWidth[calcColWidthKey];
+
+                    columnStyles["width"] = ( _this._leafCalculatedColumnWidth[calcColWidthKey] ? _this._leafCalculatedColumnWidth[calcColWidthKey] : (Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropIdx) ) + "px";
+                    // 20210607 : Harry : Set Calculated Column Width (Vertical/Body) - E
 
                     columnStyles["left"] = calculatedColumnStyleLeft + "px";
                     html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
@@ -5089,7 +5142,9 @@ function viewer(zs) {
                     html.push("</div>");
 
                     //TODO - harry
+                    // 20210607 : Harry : Set Calculated Column Left (Vertical/Body) - S
                     calculatedColumnStyleLeft += Number(calculatedColWidth);
+                    // 20210607 : Harry : Set Calculated Column Left (Vertical/Body)- E
                 }
             } else {
                 let totalSummaryMapKey = (Viewer.EMPTY_Y_AXIS_DIMENSION_KEY.indexOf(summaryMapKey) > -1) ? summaryMapKey + '||' + zPropName : summaryMapKey;
@@ -5097,6 +5152,16 @@ function viewer(zs) {
                 let zpiProp = _this._settings.zProperties.filter(item => item.name === totalSummaryMapKey.split('||').slice(-1).join('')).length > 0 ?
                     _this._settings.zProperties.filter(item => item.name === totalSummaryMapKey.split('||').slice(-1).join(''))[0] : undefined;
                 let fieldFormat = zpiProp && zpiProp.fieldFormat ? zpiProp.fieldFormat : _this._settings.format;
+
+                //TODO - harry
+                // 20210607 : Harry : Set Calculated Column Width (Horizontal/Body) - S
+                let calcColWidthKey = 'TOTAL';
+
+                _this._leafCalculatedColumnWidth[calcColWidthKey] || ( _this._leafCalculatedColumnWidth[calcColWidthKey] = Viewer.SHOW_CALCULATED_COLUMN_WIDTH );
+                let calculatedColWidth = _this._leafCalculatedColumnWidth[calcColWidthKey];
+
+                columnStyles["width"] = calculatedColWidth + "px";
+                // 20210607 : Harry : Set Calculated Column Width (Horizontal/Body) - E
 
                 html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                 // 20210525 : Harry : Set Summary Value by Field Format - S
@@ -5116,10 +5181,12 @@ function viewer(zs) {
             let totalFrozenHeightCnt = frozenHeightCnt - (zPropTitleCnt && _this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP ? zPropTitleCnt : 0);
 
             //TODO - harry
+            // 20210607 : Harry : Set Calculated Column Width (Head) - S
             let calculatedWidthKeys = Object.keys(_this._leafCalculatedColumnWidth);
             let calculatedWidth = calculatedWidthKeys.reduce(function (acc, item) {
                 return acc + Number(_this._leafCalculatedColumnWidth[item]);
             }, 0);
+            // 20210607 : Harry : Set Calculated Column Width (Head) - E
 
             // row setting
             let rowAttributes = {};
@@ -5139,25 +5206,40 @@ function viewer(zs) {
 
             let columnStyles = {};
             //TODO - harry
+            // 20210607 : Harry : Set Calculated Column Width (Head) - E
             columnStyles["width"] = ( calculatedWidth ? calculatedWidth : ( index < totalFrozenHeightCnt && _this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP ? Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropCnt : Viewer.SHOW_CALCULATED_COLUMN_WIDTH ) ) + "px";
+            // 20210607 : Harry : Set Calculated Column Width (Head) - E
             columnStyles["height"] = cellHeight + "px";
 
             //TODO - harry
+            // 20210607 : Harry : Set Resize Column Attributes & Styles (Head) - S
             let resizeColumnAttributes = {};
             let resizeColumnStyles = {};
+            // 20210607 : Harry : Set Resize Column Attributes & Styles (Head) - E
 
             // 20210409 : Harry : Set Caculated Column Head by showAxisZ - S
             if (index < totalFrozenHeightCnt) {
+                //TODO - harry
+                // 20210607 : Harry : Set Calculated Column Width (Head) - S
+                let calcColWidthKey = 'TOTAL';
+
+                _this._leafCalculatedColumnWidth[calcColWidthKey] || ( _this._leafCalculatedColumnWidth[calcColWidthKey] = Viewer.SHOW_CALCULATED_COLUMN_WIDTH );
+                let calculatedColWidth = _this._leafCalculatedColumnWidth[calcColWidthKey];
+
+                columnStyles["width"] = calculatedColWidth + "px";
                 columnStyles["color"] = _this._settings.showCalculatedColumnStyle.font.color;
                 columnStyles["background-color"] = _this._settings.showCalculatedColumnStyle.backgroundColor;
                 html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
+                // 20210607 : Harry : Set Calculated Column Width (Head) - E
 
                 //TODO - harry
+                // 20210607 : Harry : Add Resize Column For Calculated Column (Head) - S
                 resizeColumnAttributes = {};
                 resizeColumnStyles = {};
                 resizeColumnAttributes["class"] = pivotStyle.cssClass.resizeHandle;
                 resizeColumnAttributes["draggable"] = "true";
                 html.push("<div " + common.attributesString(resizeColumnAttributes, resizeColumnStyles) + "></div>");
+                // 20210607 : Harry : Add Resize Column For Calculated Column (Head) - E
 
                 if (index === totalFrozenHeightCnt - 1) {
                     html.push(!_this._settings.showCalculatedColumnStyle.label || '' === _this._settings.showCalculatedColumnStyle.label
@@ -5166,30 +5248,37 @@ function viewer(zs) {
                 html.push("</div>");
             } else if (zPropTitleCnt && _this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP) {
                 //TODO - harry
+                // 20210607 : Harry : Set Calculated Column Left (Head) - S
                 let calculatedColumnStyleLeft = 0;
+                // 20210607 : Harry : Set Calculated Column Left (Head) - E
 
                 for (let zPropIdx = 0; zPropIdx < zPropCnt; zPropIdx++) {
                     //TODO - harry
-                    _this._leafCalculatedColumnWidth[this._settings.zProperties[zPropIdx].name] || ( _this._leafCalculatedColumnWidth[this._settings.zProperties[zPropIdx].name] = Viewer.SHOW_CALCULATED_COLUMN_WIDTH );
-                    let calculatedColWidth = _this._leafCalculatedColumnWidth[this._settings.zProperties[zPropIdx].name];
+                    // 20210607 : Harry : Set Calculated Column Width (Head) - S
+                    let calcColWidthKey = 'TOTAL||' + this._settings.zProperties[zPropIdx].name;
 
-                    //TODO - harry
+                    _this._leafCalculatedColumnWidth[calcColWidthKey] || ( _this._leafCalculatedColumnWidth[calcColWidthKey] = Viewer.SHOW_CALCULATED_COLUMN_WIDTH );
+                    let calculatedColWidth = _this._leafCalculatedColumnWidth[calcColWidthKey];
+
+                    columnAttributes["data-parent-vals"] = 'TOTAL';
                     columnAttributes["title"] = _this._settings.zProperties[zPropIdx].name;
-                    columnStyles["width"] = ( _this._leafCalculatedColumnWidth[_this._settings.zProperties[zPropIdx].name] ? _this._leafCalculatedColumnWidth[_this._settings.zProperties[zPropIdx].name] : (Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropIdx) ) + "px";
+                    columnStyles["width"] = ( _this._leafCalculatedColumnWidth[calcColWidthKey] ? _this._leafCalculatedColumnWidth[calcColWidthKey] : (Viewer.SHOW_CALCULATED_COLUMN_WIDTH * zPropIdx) ) + "px";
                     columnStyles["left"] = calculatedColumnStyleLeft + "px";
 
-                    //TODO - harry
                     calculatedColumnStyleLeft += Number(calculatedColWidth);
+                    // 20210607 : Harry : Set Calculated Column Width (Head) - E
 
                     html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                     html.push(_this._settings.zProperties[zPropIdx].name);
 
                     //TODO - harry
+                    // 20210607 : Harry : Add Resize Column For Calculated Column (Head) - S
                     resizeColumnAttributes = {};
                     resizeColumnStyles = {};
                     resizeColumnAttributes["class"] = pivotStyle.cssClass.resizeHandle;
                     resizeColumnAttributes["draggable"] = "true";
                     html.push("<div " + common.attributesString(resizeColumnAttributes, resizeColumnStyles) + "></div>");
+                    // 20210607 : Harry : Add Resize Column For Calculated Column (Head) - E
 
                     html.push("</div>");
                 }
