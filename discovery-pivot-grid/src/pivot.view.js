@@ -797,14 +797,19 @@ function viewer(zs) {
 
                             let itemValue = items.columns[columnIdx + idx].value[valueIdx];
                             //TODO - harry
+                            // 20210609 : Harry : Set itemValue - S
                             item[itemKey] = ('number' === typeof itemValue) ? itemValue : ( !!itemValue ? itemValue : null );
+                            // 20210609 : Harry : Set itemValue - E
 
                             // 요약 정보 생성
                             let summaryKey = 0 < arrSummaryKeys.length ? arrSummaryKeys.join('||') + '||' + itemKey : itemKey;
                             objViewer.summaryMap[summaryKey] || (objViewer.summaryMap[summaryKey] = []);
-                            if (itemValue) {
+                            //TODO - harry
+                            // 20210609 : Harry : Set itemValue For summaryMap - S
+                            if ('number' === typeof itemValue) {
                                 objViewer.summaryMap[summaryKey].push(itemValue);
                             }
+                            // 20210609 : Harry : Set itemValue For summaryMap - E
                         }
 
                         if (!xGroup.item) {
@@ -1386,7 +1391,9 @@ function viewer(zs) {
                     let strParent = $column.attr('data-parent-vals');
                     let strVal = $column.attr('title');
                     //TODO - harry
+                    // 20210609 : Harry : Set strLeafColName - S
                     let strLeafColName = strParent ? strParent + ( strVal ? '||' + strVal : '' ) : ( strVal ? strVal : '' );
+                    // 20210609 : Harry : Set strLeafColName - E
                     let dragWidth = $column.css('width').replace(/px/, '') * 1;
 
                     if (objViewer._leafFrozenColumnWidth[strLeafColName]) {
@@ -1450,7 +1457,7 @@ function viewer(zs) {
                         });
 
                         //TODO - harry
-                        // leafColumnWidth 걸리는 부분때문에 calculatedColumnWidth 설정이 안되는데 이 부분에 대한 로직 수정 필요
+                        // leafColumnWidth 조건 때문에 calculatedColumnWidth 설정이 안되는데 이 부분에 대한 로직 수정 필요
                         // calculated column width
                         if (calcCurrentGridWidth < calcContentSizeWidth) {
                             if (!objViewer._leafCalculatedColumnWidth[strLeafColName]) {
