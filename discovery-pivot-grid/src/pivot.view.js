@@ -1894,10 +1894,10 @@ function viewer(zs) {
             }
             // 20180807 : Koo : Resize Column - E
 
-            // 20210512 : Harry : Column Right Range - S
+            // 20210512 : Harry : Column Right Range (Horizontal) - S
             range.right = Math.min(this._xItems.length - 1, range.left + Math.ceil((this._elementBody.clientWidth - frozenWidth + (this._scrollLeft - range.left * cellWidth)) / cellWidth) - 1);
             // range.right = this._xItems.length - 1;
-            // 20210512 : Harry : Column Right Range - E
+            // 20210512 : Harry : Column Right Range (Horizontal) - E
 
             if (!isForceRender && this._isPivot && range.top === this._itemsRange.top && range.bottom === this._itemsRange.bottom && range.left === this._itemsRange.left && range.right === this._itemsRange.right) {
                 let el = this._elementHeadWrap.querySelector("." + pivotStyle.cssClass.headRow + ":first-child ." + pivotStyle.cssClass.bodyCell + ":first-child");
@@ -3244,17 +3244,66 @@ function viewer(zs) {
                         return acc;
                     }, 0);
 
+                    //TODO - harry
                     if (this._scrollLeft < leftPos) {
                         range.left = 0 > idx - 1 ? 0 : idx - 1;
+                        if (range.left) {
+                            ++range.left;
+                        }
                         break;
                     }
                 }
             }
             // 20180807 : Koo : Resize Column - E
 
-            // 20210603 : Harry : Column Right Range - S
-            range.right = Math.min(this._xItems.length - 1, range.left + Math.ceil((this._elementBody.clientWidth - frozenWidth + (this._scrollLeft - range.left * cellWidthZ)) / cellWidthZ) - 1);
-            // 20210603 : Harry : Column Right Range - E
+            //TODO - harry
+            // 20210614 : Harry : Column Right Range (Vertical) - S
+            // range.right = Math.min(this._xItems.length - 1, range.left + Math.ceil((this._elementBody.clientWidth - frozenWidth + (this._scrollLeft - range.left * cellWidthZ)) / cellWidthZ) - 1);
+            range.right = Math.min(this._xItems.length - 1, range.left + Math.ceil((this._elementBody.clientWidth - frozenWidth + (this._scrollLeft - range.left * cellWidth)) / cellWidth)) - 1;
+            // 20210614 : Harry : Column Right Range (Vertical) - E
+
+            //TODO - harry
+            // 표시 범위 내의 column width 총합
+            let totalColWidth = 0;
+            let clientBodyWidth = this._elementBody.clientWidth - frozenWidth;
+
+            for (let xii = range.left; xii <= range.right; xii++) {
+                let xItem = this._xItems[xii];
+                let leafColName = this._settings.xProperties.reduce((acc, prop) => {
+                        let xVal = xItem[prop.name];
+                        xVal && ( acc = acc + ( '' === acc ? xVal : '||' + xVal ) );
+                        return acc;
+                    }, '');
+
+                if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP) {
+                    this._settings.zProperties.forEach(zProp => {
+                        let zPropLeafColName = leafColName;
+                        zProp && ( zPropLeafColName += '||' + zProp.name );
+
+                        totalColWidth = totalColWidth + Object.keys(leafColWidth).reduce((acc, currVal) => {
+                                if (currVal && -1 < currVal.indexOf(zPropLeafColName)) {
+                                    acc = acc + Number(leafColWidth[currVal]);
+                                }
+                                return acc;
+                            }, 0);
+                    });
+                } else {
+                    totalColWidth = totalColWidth + Object.keys(leafColWidth).reduce((acc, currVal) => {
+                            if (currVal && -1 < currVal.indexOf(leafColName)) {
+                               acc = acc + Number(leafColWidth[currVal]);
+                            }
+                            return acc;
+                        }, 0);
+                }
+
+                //TODO - harry
+                // totalColWidth 값이 clientBodyWidth 보다 작은 경우
+                // range.right 값을 증가해서 clientBodyWidth 보다 큰 값이 될 때까지 column width를 늘려줌
+                if (totalColWidth && (range.left > 0 ? totalColWidth - frozenWidth : totalColWidth) < clientBodyWidth
+                    && range.right < this._xItems.length - 1 && xii === range.right) {
+                    ++range.right;
+                }
+            }
 
             if (!isForceRender && range.top === this._itemsRange.top && range.bottom === this._itemsRange.bottom && range.left === this._itemsRange.left && range.right === this._itemsRange.right) {
                 let el = this._elementHeadWrap.querySelector("." + pivotStyle.cssClass.headRow + ":first-child ." + pivotStyle.cssClass.bodyCell + ":first-child");
