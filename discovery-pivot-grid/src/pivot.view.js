@@ -1676,10 +1676,12 @@ function viewer(zs) {
                 width: availableSizeBody.width,
                 height: availableSizeBody.height
             };
+            // 20210615 : Harry : Set Content Size - S
             let contentSize = {
                 width: this._settings.cellWidth * this._xItems.length * ((zPropCnt - 1) * dataDirectionToHorizontal + 1) + frozenCellWidth * (yPropCnt + dataDirectionToVertical * isShowDataKey),
-                height: this._settings.cellHeight * this._yItems.length * ((zPropCnt - 1) * dataDirectionToVertical + 1)
+                height: this._settings.cellHeight * this._yItems.length * ((zPropCnt - 1) * dataDirectionToVertical + 1) + (this._settings.totalValueStyle ? Number(this._settings.cellHeight) : 0)
             };
+            // 20210615 : Harry : Set Content Size - E
 
             let prevScrollVertical = false;
             let prevScrollHorizontal = false;
@@ -1829,11 +1831,11 @@ function viewer(zs) {
             // 전체 컨텐츠 너비 설정 - Start
             const widthKeys = Object.keys(this._leafColumnWidth);
             if (0 < widthKeys.length) {
-                // 20210603 : Harry : Set contentSizeWidth & currentGridWidth - S
+                // 20210615 : Harry : Set contentSizeWidth & currentGridWidth - S
                 let contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
                 let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - frozenWidth - calculatedColumnWidth - (this._scrollVertical && !this._scrollHorizontal ? SCROLL_WIDTH : 0);
 
-                if (this.IS_FILL_WIDTH && contentSizeWidth < currentGridWidth) {
+                if (this.IS_FILL_WIDTH && contentSizeWidth <= currentGridWidth) {
                     let cellDiffWidth = (currentGridWidth - contentSizeWidth) / widthKeys.length;
                     widthKeys.forEach(item => this._leafColumnWidth[item] = this._leafColumnWidth[item] + cellDiffWidth);
                     contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
@@ -1841,7 +1843,7 @@ function viewer(zs) {
                 } else {
                     this._elementBody.style.overflowX = 'auto';
                 }
-                // 20210603 : Harry : Set contentSizeWidth & currentGridWidth - E
+                // 20210615 : Harry : Set contentSizeWidth & currentGridWidth - E
 
                 this._elementHeadWrap.style.width = contentSizeWidth + "px";
                 this._elementBodyWrap.style.width = contentSizeWidth + "px";
@@ -1886,18 +1888,53 @@ function viewer(zs) {
                         return acc;
                     }, 0));
 
+                    // 20210615 : Harry : Set Range Left - S
                     if (this._scrollLeft < leftPos) {
                         range.left = (0 > idx - 1) ? 0 : idx - 1;
+                        if (range.left) {
+                            ++range.left;
+                        }
                         break;
                     }
+                    // 20210615 : Harry : Set Range Left - E
                 }
             }
             // 20180807 : Koo : Resize Column - E
 
             // 20210512 : Harry : Column Right Range (Horizontal) - S
             range.right = Math.min(this._xItems.length - 1, range.left + Math.ceil((this._elementBody.clientWidth - frozenWidth + (this._scrollLeft - range.left * cellWidth)) / cellWidth) - 1);
-            // range.right = this._xItems.length - 1;
-            // 20210512 : Harry : Column Right Range (Horizontal) - E
+            // 20210615 : Harry : Column Right Range (Horizontal) - E
+
+            // 20210615 : Harry : Set Column Width Variables - S
+            let totalColWidth = 0;
+            let clientBodyWidth = this._elementBody.clientWidth - frozenWidth;
+            // 20210615 : Harry : Set Column Width Variables - E
+
+            // 20210615 : Harry : Set Total Column Width & Range Right - S
+            // 그리드 표시 범위 내의 column width 총합
+            for (let xii = range.left; xii <= range.right; xii++) {
+                let xItem = this._xItems[xii];
+                let leafColName = this._settings.xProperties.reduce((acc, prop) => {
+                            let xVal = xItem[prop.name];
+                            xVal && ( acc = acc + ( '' === acc ? xVal : '||' + xVal ) );
+                            return acc;
+                        }, '');
+
+                totalColWidth = totalColWidth + Object.keys(leafColWidth).reduce((acc, currVal) => {
+                        if (currVal && -1 < currVal.indexOf(leafColName)) {
+                            acc = acc + Number(leafColWidth[currVal]);
+                        }
+                        return acc;
+                    }, 0);
+
+                // totalColWidth 값이 clientBodyWidth 보다 작은 경우
+                // range.right 값을 증가해서 clientBodyWidth 보다 큰 값이 될 때까지 column width를 늘려줌
+                if (totalColWidth && (range.left > 0 ? totalColWidth - frozenWidth : totalColWidth) < clientBodyWidth
+                    && range.right < this._xItems.length - 1 && xii === range.right) {
+                    ++range.right;
+                }
+            }
+            // 20210615 : Harry : Set Total Column Width & Range Right - E
 
             if (!isForceRender && this._isPivot && range.top === this._itemsRange.top && range.bottom === this._itemsRange.bottom && range.left === this._itemsRange.left && range.right === this._itemsRange.right) {
                 let el = this._elementHeadWrap.querySelector("." + pivotStyle.cssClass.headRow + ":first-child ." + pivotStyle.cssClass.bodyCell + ":first-child");
@@ -3188,11 +3225,11 @@ function viewer(zs) {
             // 전체 컨텐츠 너비 설정 - Start
             const widthKeys = Object.keys(this._leafColumnWidth);
             if (0 < widthKeys.length) {
-                // 20210603 : Harry : Set contentSizeWidth & currentGridWidth - S
+                // 20210615 : Harry : Set contentSizeWidth & currentGridWidth - S
                 let contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
                 let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - frozenWidth - calculatedColumnWidth - (this._scrollVertical && !this._scrollHorizontal ? SCROLL_WIDTH : 0);
 
-                if (this.IS_FILL_WIDTH && contentSizeWidth < currentGridWidth) {
+                if (this.IS_FILL_WIDTH && contentSizeWidth <= currentGridWidth) {
                     let cellDiffWidth = (currentGridWidth - contentSizeWidth) / widthKeys.length;
                     widthKeys.forEach(item => this._leafColumnWidth[item] = this._leafColumnWidth[item] + cellDiffWidth);
                     contentSizeWidth = widthKeys.reduce((acc, item) => acc + Number(this._leafColumnWidth[item]), 0);
@@ -3200,7 +3237,7 @@ function viewer(zs) {
                 } else {
                     this._elementBody.style.overflowX = 'auto';
                 }
-                // 20210603 : Harry : Set contentSizeWidth & currentGridWidth - E
+                // 20210615 : Harry : Set contentSizeWidth & currentGridWidth - E
 
                 this._elementHeadWrap.style.width = contentSizeWidth + "px";
                 this._elementBodyWrap.style.width = contentSizeWidth + "px";
@@ -3244,7 +3281,7 @@ function viewer(zs) {
                         return acc;
                     }, 0);
 
-                    //TODO - harry
+                    // 20210615 : Harry : Set Range Left - S
                     if (this._scrollLeft < leftPos) {
                         range.left = 0 > idx - 1 ? 0 : idx - 1;
                         if (range.left) {
@@ -3252,51 +3289,42 @@ function viewer(zs) {
                         }
                         break;
                     }
+                    // 20210615 : Harry : Set Range Left - E
                 }
             }
             // 20180807 : Koo : Resize Column - E
 
-            //TODO - harry
-            // 20210614 : Harry : Column Right Range (Vertical) - S
-            // range.right = Math.min(this._xItems.length - 1, range.left + Math.ceil((this._elementBody.clientWidth - frozenWidth + (this._scrollLeft - range.left * cellWidthZ)) / cellWidthZ) - 1);
-            range.right = Math.min(this._xItems.length - 1, range.left + Math.ceil((this._elementBody.clientWidth - frozenWidth + (this._scrollLeft - range.left * cellWidth)) / cellWidth)) - 1;
-            // 20210614 : Harry : Column Right Range (Vertical) - E
+            // 20210615 : Harry : Column Right Range (Vertical) - S
+            range.right = Math.min(this._xItems.length - 1, range.left + Math.ceil((this._elementBody.clientWidth - frozenWidth + (this._scrollLeft - range.left * cellWidth)) / cellWidth) - 1);
+            // 20210615 : Harry : Column Right Range (Vertical) - E
 
-            //TODO - harry
-            // 표시 범위 내의 column width 총합
+            // 20210615 : Harry : Set Column Width Variables - S
             let totalColWidth = 0;
             let clientBodyWidth = this._elementBody.clientWidth - frozenWidth;
+            // 20210615 : Harry : Set Column Width Variables - E
 
+            // 20210615 : Harry : Set Total Column Width & Range Right - S
+            // 그리드 표시 범위 내의 column width 총합
             for (let xii = range.left; xii <= range.right; xii++) {
                 let xItem = this._xItems[xii];
                 let leafColName = this._settings.xProperties.reduce((acc, prop) => {
-                        let xVal = xItem[prop.name];
-                        xVal && ( acc = acc + ( '' === acc ? xVal : '||' + xVal ) );
-                        return acc;
-                    }, '');
+                            let xVal = xItem[prop.name];
+                            xVal && ( acc = acc + ( '' === acc ? xVal : '||' + xVal ) );
+                            return acc;
+                        }, '');
 
-                if (this._settings.dataColumnMode === Viewer.DATA_COL_MODE.TOP) {
-                    this._settings.zProperties.forEach(zProp => {
-                        let zPropLeafColName = leafColName;
-                        zProp && ( zPropLeafColName += '||' + zProp.name );
+                this._settings.zProperties.forEach(zProp => {
+                    let zPropLeafColName = leafColName;
+                    zProp && ( zPropLeafColName += '||' + zProp.name );
 
-                        totalColWidth = totalColWidth + Object.keys(leafColWidth).reduce((acc, currVal) => {
-                                if (currVal && -1 < currVal.indexOf(zPropLeafColName)) {
-                                    acc = acc + Number(leafColWidth[currVal]);
-                                }
-                                return acc;
-                            }, 0);
-                    });
-                } else {
                     totalColWidth = totalColWidth + Object.keys(leafColWidth).reduce((acc, currVal) => {
-                            if (currVal && -1 < currVal.indexOf(leafColName)) {
-                               acc = acc + Number(leafColWidth[currVal]);
+                            if (currVal && -1 < currVal.indexOf(zPropLeafColName)) {
+                                acc = acc + Number(leafColWidth[currVal]);
                             }
                             return acc;
                         }, 0);
-                }
+                });
 
-                //TODO - harry
                 // totalColWidth 값이 clientBodyWidth 보다 작은 경우
                 // range.right 값을 증가해서 clientBodyWidth 보다 큰 값이 될 때까지 column width를 늘려줌
                 if (totalColWidth && (range.left > 0 ? totalColWidth - frozenWidth : totalColWidth) < clientBodyWidth
@@ -3304,6 +3332,7 @@ function viewer(zs) {
                     ++range.right;
                 }
             }
+            // 20210615 : Harry : Set Total Column Width & Range Right - S
 
             if (!isForceRender && range.top === this._itemsRange.top && range.bottom === this._itemsRange.bottom && range.left === this._itemsRange.left && range.right === this._itemsRange.right) {
                 let el = this._elementHeadWrap.querySelector("." + pivotStyle.cssClass.headRow + ":first-child ." + pivotStyle.cssClass.bodyCell + ":first-child");
@@ -5241,9 +5270,9 @@ function viewer(zs) {
                 // 20210610 : Harry : Set Calculated Column Width (Horizontal/Body) - E
 
                 html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
-                // 20210525 : Harry : Set Summary Value by Field Format - S
-                html.push(fieldFormat.type ? common.numberFormat(_this.getSummaryValue(summaryMapValue, _this._settings.showCalculatedColumnStyle), fieldFormat) : _this.getSummaryValue(summaryMapValue, _this._settings.showCalculatedColumnStyle));
-                // 20210525 : Harry : Set Summary Value by Field Format - E
+                // 20210615 : Harry : Set Summary Value by Field Format - S
+                html.push(common.numberFormat(_this.getSummaryValue(summaryMapValue, _this._settings.showCalculatedColumnStyle), fieldFormat.type ? fieldFormat : _this._settings.format));
+                // 20210615 : Harry : Set Summary Value by Field Format - E
                 html.push("</div>");
             }
             // 20210413 : Harry : Set summaryValue - E
