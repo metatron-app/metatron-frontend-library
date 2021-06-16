@@ -10,6 +10,9 @@ function zs() {
     var ui = zs.ui;
     var common = ui.common;
 
+    // 현재 언어
+    common.lang = 'ko';
+
     // 필드 구분자
     common.__fieldSeparator = '@@>>';
 
@@ -179,9 +182,26 @@ function zs() {
         if (format.abbr && format.type != 'exponent10') {
             switch (format.abbr) {
                 case 'AUTO':
-                    value = value > 1000000000 ? Number(value) / 1000000000 : value > 1000000 ? Number(value) / 1000000 : value > 1000 ? Number(value) / 1000 : value;
+                    if( 'ko' === common.lang ) {
+                        value = value > 100000000
+                            ? Number(value) / 100000000
+                            : value > 10000
+                                ? Number(value) / 10000
+                                : value > 1000
+                                    ? Number(value) / 1000
+                                    : value;
+                    } else {
+                        value = value > 1000000000
+                            ? Number(value) / 1000000000
+                            : value > 1000000
+                                ? Number(value) / 1000000
+                                : value > 1000
+                                    ? Number(value) / 1000
+                                    : value;
+                    }
                     break;
                 case 'KILO':
+                case 'KILO_KOR':
                     value = Number(value) / 1000;
                     break;
                 case 'MEGA':
@@ -189,6 +209,12 @@ function zs() {
                     break;
                 case 'GIGA':
                     value = Number(value) / 1000000000;
+                    break;
+                case 'MEGA_KOR':
+                    value = Number(value) / 10000;
+                    break;
+                case 'GIGA_KOR':
+                    value = Number(value) / 100000000;
                     break;
             }
         }
@@ -239,7 +265,23 @@ function zs() {
         if (format.abbr && format.type != 'exponent10') {
             switch (format.abbr) {
                 case 'AUTO':
-                    value += originalValue > 1000000000 ? "B" : originalValue > 1000000 ? "M" : originalValue > 1000 ? "K" : "";
+                    if( 'ko' === common.lang ) {
+                        value += originalValue > 100000000
+                            ? '억'
+                            : originalValue > 10000
+                                ? '만'
+                                : originalValue > 1000
+                                    ? '천'
+                                    : "";
+                    } else {
+                        value += originalValue > 1000000000
+                            ? "B"
+                            : originalValue > 1000000
+                                ? "M"
+                                : originalValue > 1000
+                                    ? "K"
+                                    : "";
+                    }
                     break;
                 case 'KILO':
                     value += 'K';
@@ -249,6 +291,15 @@ function zs() {
                     break;
                 case 'GIGA':
                     value += 'B';
+                    break;
+                case 'KILO_KOR':
+                    value += '천';
+                    break;
+                case 'MEGA_KOR':
+                    value += '만';
+                    break;
+                case 'GIGA_KOR':
+                    value += '억';
                     break;
             }
         }
