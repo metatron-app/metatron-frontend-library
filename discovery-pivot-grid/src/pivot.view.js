@@ -1901,14 +1901,14 @@ function viewer(zs) {
             }
             // 20180807 : Koo : Resize Column - E
 
-            // 20210512 : Harry : Column Right Range (Horizontal) - S
+            // 20210615 : Harry : Column Right Range (Horizontal) - S
             range.right = Math.min(this._xItems.length - 1, range.left + Math.ceil((this._elementBody.clientWidth - frozenWidth + (this._scrollLeft - range.left * cellWidth)) / cellWidth) - 1);
             // 20210615 : Harry : Column Right Range (Horizontal) - E
 
-            // 20210615 : Harry : Set Column Width Variables - S
+            // 20210616 : Harry : Set Column Width Variables - S
             let totalColWidth = 0;
-            let clientBodyWidth = this._elementBody.clientWidth - frozenWidth;
-            // 20210615 : Harry : Set Column Width Variables - E
+            let clientBodyWidth = this._elementBody.clientWidth;
+            // 20210616 : Harry : Set Column Width Variables - E
 
             // 20210615 : Harry : Set Total Column Width & Range Right - S
             // 그리드 표시 범위 내의 column width 총합
@@ -3298,10 +3298,10 @@ function viewer(zs) {
             range.right = Math.min(this._xItems.length - 1, range.left + Math.ceil((this._elementBody.clientWidth - frozenWidth + (this._scrollLeft - range.left * cellWidth)) / cellWidth) - 1);
             // 20210615 : Harry : Column Right Range (Vertical) - E
 
-            // 20210615 : Harry : Set Column Width Variables - S
+            // 20210616 : Harry : Set Column Width Variables - S
             let totalColWidth = 0;
-            let clientBodyWidth = this._elementBody.clientWidth - frozenWidth;
-            // 20210615 : Harry : Set Column Width Variables - E
+            let clientBodyWidth = this._elementBody.clientWidth;
+            // 20210616 : Harry : Set Column Width Variables - E
 
             // 20210615 : Harry : Set Total Column Width & Range Right - S
             // 그리드 표시 범위 내의 column width 총합
