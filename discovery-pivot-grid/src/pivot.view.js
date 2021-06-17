@@ -1770,6 +1770,14 @@ function viewer(zs) {
             this._elementHeadFrozen.style.left = this._scrollLeft + "px";
             this._elementBodyFrozen.style.left = this._scrollLeft + "px";
 
+            // 20210617 : Harry : Fix _elementBodyFrozen Position - S
+            this._elementBodyFrozen.style.left = "0px";
+            this._elementBodyFrozen.style.position = "sticky";
+            this._elementBodyFrozen.style.display = "inline-block";
+            this._elementBodyWrap.style.display = "inline-block";
+            this._elementBodyCalculatedColumn.style.display = "inline-block";
+            // 20210617 : Harry : Fix _elementBodyFrozen Position - E
+
             if (isSetRemark) {
                 // this._elementAnnotation.style.width = Math.min(availableSizeHead.width, contentSize.width) + "px";
                 this._elementAnnotation.style.width = availableSizeHead.width + "px";
@@ -5042,7 +5050,6 @@ function viewer(zs) {
 
                 this._elementHead.scrollLeft = this._scrollLeft;
                 this._elementHeadFrozen.style.left = this._scrollLeft + "px";
-                this._elementBodyFrozen.style.left = this._scrollLeft + "px";
             }
 
             if (scrollTopChanged || scrollLeftChanged) {
