@@ -24,6 +24,10 @@ function viewer(zs) {
 
         Viewer.SHOW_CALCULATED_COLUMN_WIDTH = 120;
 
+        // 20210621 : Harry : Set Minium Column Width For Resizing - S
+        Viewer.COLUMN_WIDTH_MIN = 17;
+        // 20210621 : Harry : Set Minium Column Width For Resizing - E
+
         Viewer.EMPTY_Y_AXIS_DIMENSION_KEY = "empty_y_axis_dimension";
 
         function Viewer(element) {
@@ -5090,7 +5094,11 @@ function viewer(zs) {
                 if (this.IS_FILL_WIDTH && !this._scrollHorizontal && contentSizeWidth !== currentGridWidth) {
                     let cellDiffWidth = (currentGridWidth - contentSizeWidth) / widthKeys.length;
                     widthKeys.forEach(key => {
-                        this._leafColumnWidth[key] = this._leafColumnWidth[key] + cellDiffWidth;
+                        // 20210621 : Harry : Set Leaf Column Width By Minimum Column Width - S
+                        if (this._leafColumnWidth[key] + cellDiffWidth >= Viewer.COLUMN_WIDTH_MIN) {
+                            this._leafColumnWidth[key] = this._leafColumnWidth[key] + cellDiffWidth;
+                        }
+                        // 20210621 : Harry : Set Leaf Column Width By Minimum Column Width - E
                     });
                 }
                 // 20210603 : Harry : Set Leaf Column Width - E
