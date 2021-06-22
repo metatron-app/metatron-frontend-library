@@ -60,7 +60,9 @@ function zs() {
         var sb = [];
         for (var name in attributes) {
             if (attributes.hasOwnProperty(name)) {
-                sb.push(name + "=\"" + attributes[name] + "\"");
+                // 20210622 : Harry : Change Double Quotes To HTML Character Entity For Attributes Value  - S
+                sb.push(name + "=\"" + attributes[name].toString().replace(/\"/gi, '&quot;') + "\"");
+                // 20210622 : Harry : Change Double Quotes To HTML Character Entity For Attributes Value  - S
             }
         }
         return sb.join(" ");
