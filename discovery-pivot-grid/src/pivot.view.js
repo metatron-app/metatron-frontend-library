@@ -1394,6 +1394,13 @@ function viewer(zs) {
                     // 20210610 : Harry : Set strLeafColName - E
                     let dragWidth = $column.css('width').replace(/px/, '') * 1;
 
+                    // 20210623 : Harry : Set Minimum Column Width For Resizing - S
+                    let strValWidth = objViewer.getColumnTextWidth(!objViewer._leafCalculatedColumnWidth[strLeafColName] ? strVal : strVal.split('||').slice(-1).join(''), event.target.parentElement);
+                    if (strValWidth > dragWidth) {
+                        dragWidth = Math.ceil(strValWidth);
+                    }
+                    // 20210623 : Harry : Set Minimum Column Width For Resizing - E
+
                     if (objViewer._leafFrozenColumnWidth[strLeafColName]) {
                         objViewer._leafFrozenColumnWidth[strLeafColName] = dragWidth;
                     }
@@ -5083,6 +5090,10 @@ function viewer(zs) {
             const redraw = () => {
                 let widthKeys = Object.keys(this._leafColumnWidth);
 
+                // 20210623 : Harry : Set Element Head Wrap Leaf Row Cells - S
+                let $elementHeadWrapLeafRowCells = $(this._elementHeadWrap).find('.' + pivotStyle.cssClass.headRow).last().find('.' + pivotStyle.cssClass.headCell);
+                // 20210623 : Harry : Set Element Head Wrap Leaf Row Cells - E
+
                 // 20210603 : Harry : Set contentSizeWidth & currentGridWidth - S
                 let contentSizeWidth = widthKeys.reduce((acc, item) => { return acc + Number(this._leafColumnWidth[item]) }, 0);
                 let currentGridWidth = (this._elementBody.style.width.replace(/px/gi, '') * 1) - (this._elementBodyFrozen.style.width.replace(/px/gi, '') * 1) - calculatedColumnWidth - (this._scrollVertical && !this._scrollHorizontal ? SCROLL_WIDTH : 0);
@@ -5093,12 +5104,13 @@ function viewer(zs) {
                 // 그리드가 전체 너비(this.IS_FILL_WIDTH)를 채우고, 가로 스크롤이 발생하지 않는 경우(!this._scrollHorizontal)에 대해 _leafColumnWidth 설정
                 if (this.IS_FILL_WIDTH && !this._scrollHorizontal && contentSizeWidth !== currentGridWidth) {
                     let cellDiffWidth = (currentGridWidth - contentSizeWidth) / widthKeys.length;
-                    widthKeys.forEach(key => {
-                        // 20210621 : Harry : Set Leaf Column Width By Minimum Column Width - S
+                    widthKeys.forEach((key, idx) => {
+                        // 20210623 : Harry : Set Leaf Column Width By Minimum Column Width - S
                         if (this._leafColumnWidth[key] + cellDiffWidth >= Viewer.COLUMN_WIDTH_MIN) {
-                            this._leafColumnWidth[key] = this._leafColumnWidth[key] + cellDiffWidth;
+                            let keyValWidth = this.getColumnTextWidth(key.split('||').slice(-1).join(''), $elementHeadWrapLeafRowCells.eq(idx));
+                            this._leafColumnWidth[key] = (keyValWidth > this._leafColumnWidth[key] + cellDiffWidth) ? keyValWidth : this._leafColumnWidth[key] + cellDiffWidth;
                         }
-                        // 20210621 : Harry : Set Leaf Column Width By Minimum Column Width - E
+                        // 20210623 : Harry : Set Leaf Column Width By Minimum Column Width - E
                     });
                 }
                 // 20210603 : Harry : Set Leaf Column Width - E
@@ -5435,6 +5447,27 @@ function viewer(zs) {
 
             return objItem;
         }; // func - getLeafColumnWidth
+
+        /**
+         * 컬럼 텍스트 너비 반환 함수
+         */
+        Viewer.prototype.getColumnTextWidth = function (textVal, column) {
+            let $column = $(column);
+            let textValCanvas = document.createElement('canvas');
+            let textValContext = textValCanvas.getContext('2d');
+
+            if (column) {
+                textValContext.font = $column.css('font');
+            }
+
+            let textValWidth = textValContext.measureText(textVal).width;
+
+            if (column) {
+                textValWidth += $column.css('padding-left').replace(/px/, '') * 1 + $column.css('padding-right').replace(/px/, '') * 1;
+            }
+
+            return Math.ceil(textValWidth);
+        }; // func - getColumnTextWidth
 
         return Viewer;
     }());
