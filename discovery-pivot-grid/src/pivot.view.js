@@ -1415,11 +1415,20 @@ function viewer(zs) {
                     let contentSizeWidth = widthKeys.reduce(function (acc, item) {
                         return acc + Number(objViewer._leafColumnWidth[item]);
                     }, 0);
-                    let currentGridWidth = objViewer._elementBody.style.width.replace(/px/gi, '') * 1 - objViewer._elementBodyFrozen.style.width.replace(/px/gi, '') * 1;
 
                     // 20210610 : Harry : Set Width Keys For Leaf Calculated Column Width - S
                     let calcWidthKeys = Object.keys(objViewer._leafCalculatedColumnWidth);
                     // 20210610 : Harry : Set Width Keys For Leaf Calculated Column Width - E
+
+                    // 20210624 : Harry : Set Total Width For Leaf Calculated Column Width - S
+                    let calculatedColumnWidth = calcWidthKeys.reduce(function (acc, item) {
+                        return acc + Number(objViewer._leafCalculatedColumnWidth[item]);
+                    }, 0);
+                    // 20210624 : Harry : Set Total Width For Leaf Calculated Column Width - E
+
+                    // 20210624 : Harry : Set Current Grid Width - S
+                    let currentGridWidth = objViewer._elementBody.style.width.replace(/px/gi, '') * 1 - objViewer._elementBodyFrozen.style.width.replace(/px/gi, '') * 1 - calculatedColumnWidth - (objViewer._scrollVertical && !objViewer._scrollHorizontal ? SCROLL_WIDTH : 0);
+                    // 20210624 : Harry : Set Current Grid Width - E
 
                     if (currentGridWidth < contentSizeWidth) {
                         // current state is scroll!!
@@ -3351,15 +3360,18 @@ function viewer(zs) {
                     ++range.right;
                 }
             }
-            // 20210615 : Harry : Set Total Column Width & Range Right - S
+            // 20210615 : Harry : Set Total Column Width & Range Right - E
 
-            if (!isForceRender && range.top === this._itemsRange.top && range.bottom === this._itemsRange.bottom && range.left === this._itemsRange.left && range.right === this._itemsRange.right) {
+            // 20210624 : Harry : Set Scroll Left Head Wrap First Column Of First Row - S
+            if (xPropMax && !isForceRender && range.top === this._itemsRange.top && range.bottom === this._itemsRange.bottom && range.left === this._itemsRange.left && range.right === this._itemsRange.right) {
                 let el = this._elementHeadWrap.querySelector("." + pivotStyle.cssClass.headRow + ":first-child ." + pivotStyle.cssClass.bodyCell + ":first-child");
                 if (el) {
                     el.style.left = this._scrollLeft + "px";
                 }
                 return;
             }
+            // 20210624 : Harry : Set Scroll Left Head Wrap First Column Of First Row - E
+
             this._itemsRange.top = range.top;
             this._itemsRange.bottom = range.bottom;
             this._itemsRange.left = range.left;
