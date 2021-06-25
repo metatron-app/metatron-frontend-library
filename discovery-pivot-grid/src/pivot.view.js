@@ -1404,6 +1404,10 @@ function viewer(zs) {
                     // 20210610 : Harry : Set strLeafColName - E
                     let dragWidth = $column.css('width').replace(/px/, '') * 1;
 
+                    // 20210625 : Harry : Set strColIdx - S
+                    let strColIdx = $column.attr('data-colidx') * 1;
+                    // 20210625 : Harry : Set strColIdx - E
+
                     // 20210623 : Harry : Set Minimum Column Width For Resizing - S
                     let strValWidth = objViewer.getColumnTextWidth(!objViewer._leafCalculatedColumnWidth[strLeafColName] ? strVal : strVal.split('||').slice(-1).join(''), event.target.parentElement);
                     if (strValWidth > dragWidth) {
@@ -1473,26 +1477,44 @@ function viewer(zs) {
                     } else {
                         // current state is fit!!
                         if ('TOTAL' !== strVal) {
-                            let extraWidth = currentGridWidth - dragWidth;
+                            // 20210625 : Harry : Set First & Last Column Width - S
+                            let firstColumnWidth = Number(objViewer._leafColumnWidth[widthKeys[0]]);
+                            let lastColumnWidth = Number(objViewer._leafColumnWidth[widthKeys.slice(-1).join('')]);
+                            // 20210625 : Harry : Set First & Last Column Width - E
+
                             let beforeExtraWidth = widthKeys.reduce((acc, val) => {
                                 return acc + ((val !== strLeafColName) ? Number(objViewer._leafColumnWidth[val]) : 0);
                             }, 0);
 
-                            widthKeys.forEach(key => {
-                                if (key === strLeafColName) {
-                                    objViewer._leafColumnWidth[key] = dragWidth;
+                            // 20210625 : Harry : Set Extra Column Width - S
+                            let extraWidth = currentGridWidth - dragWidth - ( strColIdx < widthKeys.length - 1 ? beforeExtraWidth - lastColumnWidth : beforeExtraWidth - firstColumnWidth );
+                            // 20210625 : Harry : Set Extra Column Width - E
+
+                            // 20210625 : Harry : Set First/Last Column Width By Resized Column Index - S
+                            if (objViewer._leafColumnWidth[strLeafColName]) {
+                                if (strColIdx < widthKeys.length - 1) {
+                                    // 마지막 컬럼에 extraWidth 적용 (마지막 컬럼을 제외한 나머지 컬럼을 resizing한 경우)
+                                    objViewer._leafColumnWidth[widthKeys.slice(-1).join('')] = extraWidth;
                                 } else {
-                                    const keys = widthKeys.filter(item => -1 < item.indexOf(key + '||'));
-                                    if (keys && 0 < keys.length) {
-                                        const cellWidth = dragWidth / keys.length;
-                                        keys.forEach(subKey => {
-                                            objViewer._leafColumnWidth[subKey] = cellWidth;
-                                        });
-                                    } else {
-                                        objViewer._leafColumnWidth[key] = extraWidth * (objViewer._leafColumnWidth[key] / beforeExtraWidth);
-                                    }
+                                    // 첫번째 컬럼에 extraWidth 적용 (마지막 컬럼을 resizing한 경우)
+                                    objViewer._leafColumnWidth[widthKeys[0]] = extraWidth;
                                 }
-                            });
+                            }
+                            // 20210625 : Harry : Set First/Last Column Width By Resized Column Index - E
+
+                            // 20210625 : Harry : Set Leaf Column Width By strLeafColName - E
+                            if (!objViewer._leafColumnWidth[strLeafColName]) {
+                                const keys = widthKeys.filter(item => -1 < item.indexOf(strLeafColName + '||'));
+                                if (keys && 0 < keys.length) {
+                                    const cellWidth = dragWidth / keys.length;
+                                    keys.forEach(key => {
+                                        objViewer._leafColumnWidth[key] = cellWidth;
+                                    });
+                                }
+                            } else {
+                                objViewer._leafColumnWidth[strLeafColName] = dragWidth;
+                            }
+                            // 20210625 : Harry : Set Leaf Column Width By strLeafColName - E
                         } else {
                             // 20210610 : Harry : Set Cell Width For Leaf Calculated Column Width - S
                             if (!objViewer._leafCalculatedColumnWidth[strLeafColName]) {
