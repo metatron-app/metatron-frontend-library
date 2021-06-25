@@ -1275,7 +1275,8 @@ function viewer(zs) {
                     let elmParentVals = $(this).attr('data-parent-vals');
                     let elmSort = $(this).attr('data-sort');
 
-                    // body-wrap, 원본 데이터 또는 vertical(dataColumnMode === 'TOP')인 경우
+                    // 20210625 : Harry : Set Settings By Data Column Mode Type - S
+                    // body-wrap 영역. 원본 데이터 또는 vertical(dataColumnMode === 'TOP')인 경우
                     if ( !objViewer._isPivot || objViewer._settings.dataColumnMode === 'TOP' ) {
                         objViewer._settings.sortType = (elmSort === Viewer.SORT_COL_MODE.NONE) ? Viewer.SORT_COL_MODE.ASC : ( (elmSort === Viewer.SORT_COL_MODE.ASC) ? Viewer.SORT_COL_MODE.DESC : Viewer.SORT_COL_MODE.NONE );
                         objViewer._settings.yAxisSort = (objViewer._settings.sortType !== Viewer.SORT_COL_MODE.NONE);
@@ -1287,6 +1288,8 @@ function viewer(zs) {
                             objViewer._settings.sortColumnMeasure = objViewer._settings.zProperties[0].name;
                             let objItem = objViewer._pivotData;
                             let objSettings = objViewer._settings;
+                            objSettings.columnWidth = objViewer.getLeafColumnWidth();
+
                             objViewer.initialize(objItem, objSettings);
                             return;
                         }
@@ -1294,17 +1297,24 @@ function viewer(zs) {
                         // z축 컬럼이 표시되지 않고 measure(zProperties) 1개만 설정된 경우 (Aggregation Column OFF)
                         if (!objViewer._settings.body.showAxisZ && objViewer._settings.zProperties.length === 1) {
                             objViewer._settings.sortColumnMeasure = objViewer._settings.zProperties[0].name;
-                            objViewer.update(objViewer._settings);
+                            let objSettings = objViewer._settings;
+                            objSettings.columnWidth = objViewer.getLeafColumnWidth();
+
+                            objViewer.update(objSettings);
                             return;
                         }
 
                         // z축 컬럼이 표시된 경우 (Aggregation Column ON)
                         if (objViewer._settings.body.showAxisZ && !_.isEmpty( _.find( objViewer._settings.zProperties, function(o) { return _.eq(o.name, elmData); } ) ) ) {
                             objViewer._settings.sortColumnMeasure = elmData;
-                            objViewer.update(objViewer._settings);
+                            let objSettings = objViewer._settings;
+                            objSettings.columnWidth = objViewer.getLeafColumnWidth();
+
+                            objViewer.update(objSettings);
                             return;
                         }
                     }
+                    // 20210625 : Harry : Set Settings By Data Column Mode Type - E
                 }) // on - click : xAxisSortSelector
                 // 20210305 : Harry : Sort Column Click - E
                 .on('click', yAxisSelector, function () {
@@ -5475,7 +5485,8 @@ function viewer(zs) {
             let textValWidth = textValContext.measureText(textVal).width;
 
             if (column) {
-                textValWidth += $column.css('padding-left').replace(/px/, '') * 1 + $column.css('padding-right').replace(/px/, '') * 1;
+                // 정렬 버튼 영역 유지를 위해 10px 추가
+                textValWidth += $column.css('padding-left').replace(/px/, '') * 1 + $column.css('padding-right').replace(/px/, '') * 1 + 10;
             }
 
             return Math.ceil(textValWidth);
