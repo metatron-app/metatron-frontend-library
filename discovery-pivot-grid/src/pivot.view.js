@@ -1275,14 +1275,20 @@ function viewer(zs) {
                     let elmParentVals = $(this).attr('data-parent-vals');
                     let elmSort = $(this).attr('data-sort');
 
-                    // 20210625 : Harry : Set Settings By Data Column Mode Type - S
-                    // body-wrap 영역. 원본 데이터 또는 vertical(dataColumnMode === 'TOP')인 경우
-                    if ( !objViewer._isPivot || objViewer._settings.dataColumnMode === 'TOP' ) {
-                        objViewer._settings.sortType = (elmSort === Viewer.SORT_COL_MODE.NONE) ? Viewer.SORT_COL_MODE.ASC : ( (elmSort === Viewer.SORT_COL_MODE.ASC) ? Viewer.SORT_COL_MODE.DESC : Viewer.SORT_COL_MODE.NONE );
-                        objViewer._settings.yAxisSort = (objViewer._settings.sortType !== Viewer.SORT_COL_MODE.NONE);
-                        objViewer._settings.sortColumnParentKeys = elmParentKeys.split('||').join(common.__fieldSeparator);
-                        objViewer._settings.sortColumnParentVals = elmParentVals.split('||').join(common.__fieldSeparator);
+                    // 20210629 : Harry : Set Variables For Horizontal Sorting - S
+                    let zPropMax = objViewer._settings.zProperties.length;
+                    let horizontalSubCalcKeyCount = objViewer._settings.subCalcCellStyle ? objViewer._settings.yProperties.filter(item => objViewer._settings.subCalcCellStyle[item.name.toLowerCase()]).length : 0;
+                    // 20210629 : Harry : Set Variables For Horizontal Sorting - E
 
+                    objViewer._settings.sortType = (elmSort === Viewer.SORT_COL_MODE.NONE) ? Viewer.SORT_COL_MODE.ASC : ( (elmSort === Viewer.SORT_COL_MODE.ASC) ? Viewer.SORT_COL_MODE.DESC : Viewer.SORT_COL_MODE.NONE );
+                    objViewer._settings.yAxisSort = (objViewer._settings.sortType !== Viewer.SORT_COL_MODE.NONE);
+                    objViewer._settings.sortColumnParentKeys = elmParentKeys.split('||').join(common.__fieldSeparator);
+                    objViewer._settings.sortColumnParentVals = elmParentVals.split('||').join(common.__fieldSeparator);
+
+                    // 20210629 : Harry : Set Settings By Data Column Mode Type - S
+                    // body-wrap 영역.
+                    // 원본 데이터 또는 vertical(dataColumnMode === 'TOP')인 경우
+                    if ( !objViewer._isPivot || objViewer._settings.dataColumnMode === 'TOP') {
                         // 원본 데이터인 경우
                         if (!objViewer._isPivot) {
                             objViewer._settings.sortColumnMeasure = objViewer._settings.zProperties[0].name;
@@ -1294,7 +1300,7 @@ function viewer(zs) {
                             return;
                         }
 
-                        // z축 컬럼이 표시되지 않고 measure(zProperties) 1개만 설정된 경우 (Aggregation Column OFF)
+                        // z축 컬럼이 표시되지 않고 measure(zProperties) 1개만 설정된 경우 (Aggregation Column OFF, Vertical)
                         if (!objViewer._settings.body.showAxisZ && objViewer._settings.zProperties.length === 1) {
                             objViewer._settings.sortColumnMeasure = objViewer._settings.zProperties[0].name;
                             let objSettings = objViewer._settings;
@@ -1304,7 +1310,7 @@ function viewer(zs) {
                             return;
                         }
 
-                        // z축 컬럼이 표시된 경우 (Aggregation Column ON)
+                        // z축 컬럼이 표시된 경우 (Aggregation Column ON, Vertical)
                         if (objViewer._settings.body.showAxisZ && !_.isEmpty( _.find( objViewer._settings.zProperties, function(o) { return _.eq(o.name, elmData); } ) ) ) {
                             objViewer._settings.sortColumnMeasure = elmData;
                             let objSettings = objViewer._settings;
@@ -1314,7 +1320,17 @@ function viewer(zs) {
                             return;
                         }
                     }
-                    // 20210625 : Harry : Set Settings By Data Column Mode Type - E
+                    // Horizontal(dataColumnMode === 'LEFT')이고 measure(zProperties) 개수가 1개이고 행 부분 합이 설정되지 않은 경우
+                    else if (objViewer._settings.dataColumnMode === 'LEFT' && zPropMax === 1 && !horizontalSubCalcKeyCount) {
+                        objViewer._settings.sortColumnMeasure = objViewer._settings.zProperties[0].name;
+
+                        let objSettings = objViewer._settings;
+                        objSettings.columnWidth = objViewer.getLeafColumnWidth();
+
+                        objViewer.update(objSettings);
+                        return;
+                    }
+                    // 20210629 : Harry : Set Settings By Data Column Mode Type - E
                 }) // on - click : xAxisSortSelector
                 // 20210305 : Harry : Sort Column Click - E
                 .on('click', yAxisSelector, function () {
@@ -2139,6 +2155,62 @@ function viewer(zs) {
                 if (this._isPivot) {
                     html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                     html.push(columnAttributes["title"]);
+
+                    //TODO - harry - S
+                    // horizontal 그리드 xProp 없는 경우에 대한 sorting 추가
+
+                    // 20210629 : Harry : Add zPropName By showAxisZ - S
+                    // if (this._settings.body.showAxisZ) {
+                    //     html.push(zPropName);
+                    // }
+                    // 20210629 : Harry : Add zPropName By showAxisZ - E
+
+                    // 20210305 : Harry : Sort Column - S
+                    columnAttributes["class"] = pivotStyle.cssClass.axisXSort;
+
+                    // let arrKeys = [];
+                    // let arrVals = [];
+                    columnAttributes["data-parent-keys"] = '';
+                    columnAttributes["data-parent-vals"] = '';
+
+                    // for (let idx = 0; idx < xPropMax; idx++) {
+                    //     arrKeys.push(this._settings.xProperties[idx].name);
+                    //     arrVals.push(xItem[this._settings.xProperties[idx].name]);
+                    // } // end for - xProperties
+                    //
+                    // arrKeys.push(columnAttributes['data-key']);
+                    // arrVals.push(columnAttributes['title']);
+                    //
+                    // // parent key, value setting
+                    // if (0 < arrKeys.length) {
+                    //     columnAttributes["data-parent-keys"] = arrKeys.join("||");
+                    //     columnAttributes["data-parent-vals"] = arrVals.join("||");
+                    // }
+
+                    // sort type setting
+                    if (this._settings.sortColumnParentVals + common.__fieldSeparator + this._settings.sortColumnMeasure
+                        === columnAttributes['data-parent-vals'].split('||').join(common.__fieldSeparator) + common.__fieldSeparator + this._settings.zProperties[0].name) {
+                        columnAttributes["data-sort"] = this._settings.sortType;
+                    } else {
+                        columnAttributes["data-sort"] = Viewer.SORT_COL_MODE.NONE;
+                    }
+
+                    columnStyles = {};
+
+                    // 20210514 : Harry : Set Sort Column Styles - S
+                    columnStyles["display"] = 'flex';
+                    columnStyles["align-items"] = 'center';
+                    // 20210514 : Harry : Set Sort Column Styles - E
+
+                    html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
+                    // 20210525 : Harry : Set Sort Column Attributes - S
+                    html.push(columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.NONE ? '' : ( columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.ASC ? '▲' : '▼'));
+                    // 20210525 : Harry : Set Sort Column Attributes - E
+                    html.push("</div>");
+                    // 20210305 : Harry : Sort Column - E
+
+                    //TODO - harry - E
+
                     html.push("</div>");
                     html.push("</div>");
                 }
@@ -2345,8 +2417,10 @@ function viewer(zs) {
                         html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
                         html.push(getDisplayValue(value));
 
-                        // 20210305 : Harry : Sort Column - S
-                        if ( !this._isPivot ) {
+                        let horizontalSubCalcKeyCount = this._settings.subCalcCellStyle ? this._settings.yProperties.filter(item => this._settings.subCalcCellStyle[item.name.toLowerCase()]).length : 0;
+
+                        // 20210629 : Harry : Set Sort Column (Horizontal) - S
+                        if ( !this._isPivot || (zPropMax === 1 && !horizontalSubCalcKeyCount) ) {
                             columnAttributes["class"] = pivotStyle.cssClass.axisXSort;
 
                             let arrKeys = [];
@@ -2387,7 +2461,7 @@ function viewer(zs) {
                             // 20210525 : Harry : Set Sort Column Attributes - E
                             html.push("</div>");
                         }
-                        // 20210305 : Harry : Sort Column - E
+                        // 20210629 : Harry : Set Sort Column (Horizontal) - E
 
                         // 20180807 : Koo : Resize Column - S
                         if (xpi === xPropMax - 1) {
@@ -2403,6 +2477,7 @@ function viewer(zs) {
                     }	// end for - xii
                     html.push("</div>");
                 }	// end for - xpi
+
                 this._elementHeadWrap.innerHTML = html.join("");
             }
             // Head Wrap : x축 영역 표시 - End
@@ -3790,126 +3865,133 @@ function viewer(zs) {
                     html.push("</div>");
                 } // end for - xpi
 
-                if (this._settings.body.showAxisZ) {
-                    // #20161230-01 : 값 필드 표시 방향 선택 기능
-                    rowAttributes = {};
-                    rowAttributes["class"] = pivotStyle.cssClass.headRow;
-                    rowAttributes["class"] = this.addClassFontStyle(rowAttributes["class"], this._settings.header.font);
-                    rowAttributes["class"] = this.addClassTextAlign(rowAttributes["class"], this._settings.header.align, 'LEFT');
-                    rowStyles = {};
-                    rowStyles["width"] = "100%";
-                    rowStyles["height"] = cellHeight + "px";
-                    rowStyles["top"] = (xPropMax + xPropTitleCnt) * cellHeight + "px;";
-                    html.push("<div " + common.attributesString(rowAttributes, rowStyles) + ">");
+                //TODO - harry
+                // if (this._settings.body.showAxisZ) {
+                // #20161230-01 : 값 필드 표시 방향 선택 기능
+                rowAttributes = {};
+                rowAttributes["class"] = pivotStyle.cssClass.headRow;
+                rowAttributes["class"] = this.addClassFontStyle(rowAttributes["class"], this._settings.header.font);
+                rowAttributes["class"] = this.addClassTextAlign(rowAttributes["class"], this._settings.header.align, 'LEFT');
+                rowStyles = {};
+                rowStyles["width"] = "100%";
+                rowStyles["height"] = cellHeight + "px";
+                rowStyles["top"] = (xPropMax + xPropTitleCnt) * cellHeight + "px;";
+                html.push("<div " + common.attributesString(rowAttributes, rowStyles) + ">");
 
-                    for (let xii = range.left; xii <= range.right; xii++) {
+                for (let xii = range.left; xii <= range.right; xii++) {
+
+                    // #20161229-01 : 축 선택 시 상위 축 정보 포함 제공 - Start
+                    let xItem = this._xItems[xii];
+                    let strKeys = this._settings.xProperties.map(xProp => xProp.name).join('||');
+                    let strVals = this._settings.xProperties.map(xProp => xItem[xProp.name]).join('||');
+                    // #20161229-01 : 축 선택 시 상위 축 정보 포함 제공 - End
+
+                    for (let zpi = 0; zpi < zPropMax; zpi++) {
+                        // z-axis 추가
+                        columnAttributes = {};
+
+                        // 20210525 : Harry : X Axis Class For Sorting - S
+                        columnAttributes["class"] = pivotStyle.cssClass.headCell;
+                        // 20210525 : Harry : X Axis Class For Sorting - E
+
+                        columnAttributes["title"] = this._settings.zProperties[zpi].name;
+                        columnAttributes["data-key"] = 'dataAxis';
+                        columnAttributes["data-colIdx"] = zPropMax * xii + zpi;
 
                         // #20161229-01 : 축 선택 시 상위 축 정보 포함 제공 - Start
-                        let xItem = this._xItems[xii];
-                        let strKeys = this._settings.xProperties.map(xProp => xProp.name).join('||');
-                        let strVals = this._settings.xProperties.map(xProp => xItem[xProp.name]).join('||');
+                        columnAttributes["data-parent-keys"] = strKeys;
+                        columnAttributes["data-parent-vals"] = strVals;
                         // #20161229-01 : 축 선택 시 상위 축 정보 포함 제공 - End
 
-                        for (let zpi = 0; zpi < zPropMax; zpi++) {
-                            // z-axis 추가
-                            columnAttributes = {};
+                        columnStyles = {};
+                        columnStyles["height"] = cellHeight + "px";
 
-                            // 20210525 : Harry : X Axis Class For Sorting - S
-                            columnAttributes["class"] = pivotStyle.cssClass.headCell;
-                            // 20210525 : Harry : X Axis Class For Sorting - E
+                        let zPropName = this._settings.zProperties[zpi].name;
 
-                            columnAttributes["title"] = this._settings.zProperties[zpi].name;
-                            columnAttributes["data-key"] = 'dataAxis';
-                            columnAttributes["data-colIdx"] = zPropMax * xii + zpi;
-
-                            // #20161229-01 : 축 선택 시 상위 축 정보 포함 제공 - Start
-                            columnAttributes["data-parent-keys"] = strKeys;
-                            columnAttributes["data-parent-vals"] = strVals;
-                            // #20161229-01 : 축 선택 시 상위 축 정보 포함 제공 - End
-
-                            columnStyles = {};
-                            columnStyles["height"] = cellHeight + "px";
-
-                            let zPropName = this._settings.zProperties[zpi].name;
-
-                            // 20180807 : Koo : Resize Column - S
-                            // columnStyles["left"] = (((zPropMax * xii) + zpi) * cellWidth) + "px";
-                            // columnStyles["width"] = frozenCellWidth + "px";
-                            let leftPos = 0;
-                            let xPrevItemList = this._xItems.slice(0, xii);
-                            xPrevItemList
-                                .map(xPrevItem => {
-                                    return this._settings.xProperties.map(xProp => xPrevItem[xProp.name]).join('||');
-                                })
-                                .reduce((acc, currVal) => {
-                                    (-1 === acc.indexOf(currVal)) && (acc.push(currVal));
-                                    return acc;
-                                }, [])
-                                .forEach(leafColName => {
-                                    leftPos = leftPos + Object.keys(leafColWidth).reduce((acc, currVal) => {
-                                        if (currVal && -1 < currVal.indexOf(leafColName)) {
-                                            acc = acc + Number(leafColWidth[currVal]);
-                                        }
-                                        return acc;
-                                    }, 0);
-                                });
-                            leftPos = leftPos + this._settings.zProperties.slice(0, zpi).reduce((acc, currVal) => {
-                                let leafColName = (columnAttributes["data-parent-vals"]) ? columnAttributes["data-parent-vals"] + "||" + currVal.name : currVal.name;
-                                return acc + Number(leafColWidth[leafColName]);
-                            }, 0);
-                            columnStyles["left"] = leftPos + "px";
-
-                            let leafColName = (columnAttributes["data-parent-vals"]) ? columnAttributes["data-parent-vals"] + "||" + zPropName : zPropName;
-                            columnStyles["width"] = Object.keys(leafColWidth).reduce((acc, currVal) => {
-                                if (currVal === leafColName) {
-                                    acc = acc + Number(leafColWidth[currVal]);
-                                }
+                        // 20180807 : Koo : Resize Column - S
+                        // columnStyles["left"] = (((zPropMax * xii) + zpi) * cellWidth) + "px";
+                        // columnStyles["width"] = frozenCellWidth + "px";
+                        let leftPos = 0;
+                        let xPrevItemList = this._xItems.slice(0, xii);
+                        xPrevItemList
+                            .map(xPrevItem => {
+                                return this._settings.xProperties.map(xProp => xPrevItem[xProp.name]).join('||');
+                            })
+                            .reduce((acc, currVal) => {
+                                (-1 === acc.indexOf(currVal)) && (acc.push(currVal));
                                 return acc;
-                            }, 0) + "px";
-                            // 20180807 : Koo : Resize Column - E
+                            }, [])
+                            .forEach(leafColName => {
+                                leftPos = leftPos + Object.keys(leafColWidth).reduce((acc, currVal) => {
+                                    if (currVal && -1 < currVal.indexOf(leafColName)) {
+                                        acc = acc + Number(leafColWidth[currVal]);
+                                    }
+                                    return acc;
+                                }, 0);
+                            });
+                        leftPos = leftPos + this._settings.zProperties.slice(0, zpi).reduce((acc, currVal) => {
+                            let leafColName = (columnAttributes["data-parent-vals"]) ? columnAttributes["data-parent-vals"] + "||" + currVal.name : currVal.name;
+                            return acc + Number(leafColWidth[leafColName]);
+                        }, 0);
+                        columnStyles["left"] = leftPos + "px";
 
-                            columnStyles["color"] = this._settings.header.font.color;
-                            columnStyles["background-color"] = this._settings.header.backgroundColor;
-                            html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
-                            html.push(zPropName);
-
-                            // 20210305 : Harry : Sort Column - S
-                            columnAttributes["class"] = pivotStyle.cssClass.axisXSort;
-
-                            // columnAttributes 정보가 선택한 z축 cell 정보와 일치하는 경우, 선택한 정렬 타입에 따라 columnAttributes["data-sort"] 설정
-                            if (this._settings.sortColumnParentVals + common.__fieldSeparator + this._settings.sortColumnMeasure
-                                === columnAttributes['data-parent-vals'].split('||').join(common.__fieldSeparator) + common.__fieldSeparator + columnAttributes['title']) {
-                                columnAttributes["data-sort"] = this._settings.sortType;
-                            } else {
-                                columnAttributes["data-sort"] = Viewer.SORT_COL_MODE.NONE;
+                        let leafColName = (columnAttributes["data-parent-vals"]) ? columnAttributes["data-parent-vals"] + "||" + zPropName : zPropName;
+                        columnStyles["width"] = Object.keys(leafColWidth).reduce((acc, currVal) => {
+                            if (currVal === leafColName) {
+                                acc = acc + Number(leafColWidth[currVal]);
                             }
+                            return acc;
+                        }, 0) + "px";
+                        // 20180807 : Koo : Resize Column - E
 
-                            columnStyles = {};
+                        columnStyles["color"] = this._settings.header.font.color;
+                        columnStyles["background-color"] = this._settings.header.backgroundColor;
+                        html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
 
-                            // 20210514 : Harry : Set Sort Column Styles - S
-                            columnStyles["display"] = 'flex';
-                            columnStyles["align-items"] = 'center';
-                            // 20210514 : Harry : Set Sort Column Styles - E
+                        //TODO - harry
+                        // 20210629 : Harry : Add zPropName By showAxisZ - S
+                        if (this._settings.body.showAxisZ) {
+                            html.push(zPropName);
+                        }
+                        // 20210629 : Harry : Add zPropName By showAxisZ - E
 
-                            html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
-                            // 20210525 : Harry : Set Sort Column Attributes - S
-                            html.push(columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.NONE ? '' : ( columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.ASC ? '▲' : '▼'));
-                            // 20210525 : Harry : Set Sort Column Attributes - E
-                            html.push("</div>");
-                            // 20210305 : Harry : Sort Column - E
+                        // 20210305 : Harry : Sort Column - S
+                        columnAttributes["class"] = pivotStyle.cssClass.axisXSort;
 
-                            // 20180807 : Koo : Resize Column - E
-                            columnAttributes = {};
-                            columnAttributes["class"] = pivotStyle.cssClass.resizeHandle;
-                            columnAttributes["draggable"] = "true";
-                            columnStyles = {};
-                            html.push("<div " + common.attributesString(columnAttributes, columnStyles) + "></div>");
-                            // 20180807 : Koo : Resize Column - E
-                            html.push("</div>");
-                        } // end for - zpi
+                        // columnAttributes 정보가 선택한 z축 cell 정보와 일치하는 경우, 선택한 정렬 타입에 따라 columnAttributes["data-sort"] 설정
+                        if (this._settings.sortColumnParentVals + common.__fieldSeparator + this._settings.sortColumnMeasure
+                            === columnAttributes['data-parent-vals'].split('||').join(common.__fieldSeparator) + common.__fieldSeparator + columnAttributes['title']) {
+                            columnAttributes["data-sort"] = this._settings.sortType;
+                        } else {
+                            columnAttributes["data-sort"] = Viewer.SORT_COL_MODE.NONE;
+                        }
 
-                    } // end for - xii
-                } // end if - data key display mode : top
+                        columnStyles = {};
+
+                        // 20210514 : Harry : Set Sort Column Styles - S
+                        columnStyles["display"] = 'flex';
+                        columnStyles["align-items"] = 'center';
+                        // 20210514 : Harry : Set Sort Column Styles - E
+
+                        html.push("<div " + common.attributesString(columnAttributes, columnStyles) + ">");
+                        // 20210525 : Harry : Set Sort Column Attributes - S
+                        html.push(columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.NONE ? '' : ( columnAttributes["data-sort"] === Viewer.SORT_COL_MODE.ASC ? '▲' : '▼'));
+                        // 20210525 : Harry : Set Sort Column Attributes - E
+                        html.push("</div>");
+                        // 20210305 : Harry : Sort Column - E
+
+                        // 20180807 : Koo : Resize Column - E
+                        columnAttributes = {};
+                        columnAttributes["class"] = pivotStyle.cssClass.resizeHandle;
+                        columnAttributes["draggable"] = "true";
+                        columnStyles = {};
+                        html.push("<div " + common.attributesString(columnAttributes, columnStyles) + "></div>");
+                        // 20180807 : Koo : Resize Column - E
+                        html.push("</div>");
+                    } // end for - zpi
+
+                } // end for - xii
+                // } // end if - data key display mode : top
 
                 this._elementHeadWrap.innerHTML = html.join("");
             }
