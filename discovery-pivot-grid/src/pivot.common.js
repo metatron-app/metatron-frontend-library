@@ -327,6 +327,9 @@ function zs() {
                 case 'EUR':
                     value = '€ ' + value;
                     break;
+                case 'RUB':
+                    value = '₽ ' + value;
+                    break;
             }
         }
         // 퍼센트
