@@ -322,6 +322,7 @@ function zs() {
                     value = '£ ' + value;
                     break;
                 case 'JPY':
+                case 'CNY':
                     value = '¥ ' + value;
                     break;
                 case 'EUR':
