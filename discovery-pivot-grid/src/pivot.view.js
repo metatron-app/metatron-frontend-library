@@ -4079,7 +4079,18 @@ function viewer(zs) {
                             columnStyles["color"] = this._settings.calcCellStyle.font.color;
                             columnStyles["background-color"] = this._settings.calcCellStyle.backgroundColor;
                         } else if ('SUB-TOTAL' === value) {
-                            columnStyles["width"] = ((yPropMax - ypi) * frozenCellWidth) + "px";
+                            // 20211224 : Koo : Fix subtotal width calculation error - S
+                            if( 1 === (yPropMax - ypi) ) {
+                                columnStyles["width"] = frozenCellWidth + "px";
+                            } else {
+                                let subTotalWidth = 0;
+                                for( let styii = ypi;  styii < yPropMax; styii++ ) {
+                                    let ypName = this._settings.yProperties[styii].name;
+                                    subTotalWidth += leafFrozenColWidth[ypName];
+                                }
+                                columnStyles["width"] = subTotalWidth + "px";
+                            }
+                            // 20211224 : Koo : Fix subtotal width calculation error - E
                             const subTotalPropName = this._settings.yProperties[ypi - 1].name;
                             const subCellStyle = this._settings.subCalcCellStyle[subTotalPropName.toLowerCase()];
                             // value = common.capitalize(subCellStyle.aggregationType) + '(' + yItem[subTotalPropName] + ')';

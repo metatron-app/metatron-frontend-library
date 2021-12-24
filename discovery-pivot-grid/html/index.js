@@ -1064,6 +1064,91 @@ document.querySelector("#button_3row_pivot").addEventListener("click", function 
     });
 }, false);
 
+document.querySelector("#button_3row_multi_measure_pivot").addEventListener("click", function (e) {
+    pivotViewer.initialize(items9, {
+        "xProperties": [],
+        "yProperties": [{name: 'MONTH(OrderDate)'}, {name: 'Category'}, {name: 'Sub-Category'}],
+        "zProperties": [{name: 'SUM(Discount)', digits: 2, type: 'INTEGER'}, {name: 'SUM(Profit)', digits: 2, type: 'INTEGER'}, {name: 'SUM(Sales)', digits: 2, type: 'INTEGER'}, {name: 'SUM(DaystoShipActual)', digits: 2, type: 'INTEGER'}, {name: 'SUM(SalesForecast)', digits: 2, type: 'INTEGER'}, {name: 'SUM(DaystoShipScheduled)', digits: 2, type: 'INTEGER'}, {name: 'SUM(SalesperCustomer)', digits: 2, type: 'INTEGER'}, {name: 'SUM(ProfitRatio)', digits: 2, type: 'INTEGER'}],
+        "axisSelectMode": "MULTI",
+        "onAxisXClick": null,
+        "onAxisYClick": null,
+        "onBodyCellClick": null,
+        "cellWidth": 120,
+        "cellHeight": 30,
+        "columnWidth": {
+            "Category": 182,
+            "MONTH(OrderDate)": 120,
+            "SUM(DaystoShipActual)": 120,
+            "SUM(DaystoShipScheduled)": 120,
+            "SUM(Discount)": 120,
+            "SUM(Profit)": 120,
+            "SUM(ProfitRatio)": 120,
+            "SUM(Sales)": 120,
+            "SUM(SalesForecast)": 120,
+            "SUM(SalesperCustomer)": 120,
+            "Sub-Category": 120
+        },
+        "showAxisZ": false,
+        "max": 33171,
+        "min": -5222,
+        "header": {
+            "font": {"size": 13, "styles": [], "color": "#959595"},
+            "align": {"hAlign": "left", "vAlign": "middle"},
+            "showHeader": true,
+            "backgroundColor": "#ffffff"
+        },
+        "body": {
+            "font": {"size": 13, "styles": []},
+            "color": {"stepColors": [], "stepTextColors": [], "showColorStep": true},
+            "align": {"hAlign": "left", "vAlign": "middle"},
+            "showAxisZ": true
+        },
+        "useSelectStyle": true,
+        "leftAxisWidth": 120,
+        "showColorStep": false,
+        "dataColumnMode": "TOP",
+        "subCalcCellStyle": {
+            category: {
+                aggregationType: "SUM",
+                align: {hAlign: 'AUTO', vAlign: 'MIDDLE'},
+                backgroundColor: "#eeeeee",
+                font: {size: 13, color: '', styles: []},
+                fontColor: "",
+                fontSize: "NORMAL",
+                fontStyles: [],
+                hAlign: "AUTO",
+                label: "",
+                vAlign: "MIDDLE"
+            },
+            'month(orderdate)': {
+                aggregationType: "SUM",
+                align: {hAlign: 'AUTO', vAlign: 'MIDDLE'},
+                backgroundColor: "#eeeeee",
+                font: {size: 13, color: '', styles: []},
+                fontColor: "",
+                fontSize: "NORMAL",
+                fontStyles: [],
+                hAlign: "AUTO",
+                label: "",
+                vAlign: "MIDDLE"
+            },
+            'sub-category': {
+                aggregationType: "SUM",
+                align: {hAlign: 'AUTO', vAlign: 'MIDDLE'},
+                backgroundColor: "#eeeeee",
+                font: {size: 13, color: '', styles: []},
+                fontColor: "",
+                fontSize: "NORMAL",
+                fontStyles: [],
+                hAlign: "AUTO",
+                label: "",
+                vAlign: "MIDDLE"
+            }
+        },
+        "format": {"isAll": true, "each": null, "type": "number", "sign": "KRW", "decimal": 2, "useThousandsSep": true}
+    });
+}, false);
+
 document.querySelector("#button10").addEventListener("click", function (e) {
     pivotViewer.initialize(items8, {
         xProperties: [{"name": "Category"}],
