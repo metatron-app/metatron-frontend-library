@@ -12,25 +12,8 @@
 <body>
     <h1>Pivot Grid Test</h1>
 
-    <p>
-        <div>헤더설정</div>
-        <select id="fontSize" autocomplete="false">
-            <option value="11">11</option>
-            <option value="13" selected>13</option>
-            <option value="15">15</option>
-        </select>
-        <select id="textAlign" autocomplete="false">
-            <option value="left" selected>left</option>
-            <option value="center">center</option>
-            <option value="right">right</option>
-        </select>
-        <select id="textAlignVertical" autocomplete="false">
-            <option value="top">top</option>
-            <option value="middle" selected>middle</option>
-            <option value="bottom">bottom</option>
-        </select>
-    </p>
-    <p>
+    <div style="width: 100%;height: 100px;overflow: scroll;">
+        <button id="button_tdeal_sample" style="text-align: left">T-Deal Sample</button>
         <button id="button1">data1</button>
         <button id="button2" style="text-align: left">
             Dimension : SubCategory<br>
@@ -171,7 +154,10 @@
         </button>
         <button id="button10" style="text-align: left">data10</button>
         <button id="sample1" style="text-align: left">sample1</button>
-    </p>
+    </div>
+
+
+
 
     <div style="width: 100%; height: 800px;">
         <div id="pivotView"></div>
@@ -197,6 +183,7 @@
     <script src="./data/item_sum_horizontal2.js"></script>
     <script src="./data/items_horizontal_non_x.js"></script>
     <script src="./data/sample1.js"></script>
+    <script src="./data/tdeal_sample.js"></script>
     <script src="./index.js"></script>
 </body>
 </html>

@@ -1149,6 +1149,227 @@ document.querySelector("#button_3row_multi_measure_pivot").addEventListener("cli
     });
 }, false);
 
+
+document.querySelector("#button_tdeal_sample").addEventListener("click", function (e) {
+    pivotViewer.initialize(tdeal_sample,{
+        "xProperties":[
+
+        ],
+        "yProperties":[
+            {
+                "name":"일자"
+            },
+            {
+                "name":"고유번호"
+            },
+            {
+                "name":"브랜드명"
+            },
+            {
+                "name":"세그먼트"
+            }
+        ],
+        "zProperties":[
+            {
+                "name":"발송수",
+                "digits":2,
+                "type":"INTEGER",
+                "fieldFormat":{
+                    "type":"number",
+                    "sign":"KRW",
+                    "decimal":0,
+                    "useThousandsSep":true,
+                    "abbr":"NONE"
+                }
+            },
+            {
+                "name":"CVR %",
+                "digits":2,
+                "fieldFormat":{
+
+                }
+            },
+            {
+                "name":"구매금액",
+                "digits":2,
+                "type":"INTEGER",
+                "fieldFormat":{
+                    "type":"number",
+                    "sign":"KRW",
+                    "decimal":0,
+                    "useThousandsSep":true,
+                    "abbr":"NONE"
+                }
+            },
+            {
+                "name":"발송당거래액",
+                "digits":2,
+                "fieldFormat":{
+
+                }
+            },
+            {
+                "name":"CTR %",
+                "digits":2,
+                "fieldFormat":{
+
+                }
+            },
+            {
+                "name":"구매건수",
+                "digits":2,
+                "type":"INTEGER",
+                "fieldFormat":{
+                    "type":"number",
+                    "sign":"KRW",
+                    "decimal":0,
+                    "useThousandsSep":true,
+                    "abbr":"NONE"
+                }
+            },
+            {
+                "name":"구매수량",
+                "digits":2,
+                "type":"INTEGER",
+                "fieldFormat":{
+                    "type":"number",
+                    "sign":"KRW",
+                    "decimal":0,
+                    "useThousandsSep":true,
+                    "abbr":"NONE"
+                }
+            },
+            {
+                "name":"클릭수",
+                "digits":2,
+                "type":"INTEGER",
+                "fieldFormat":{
+                    "type":"number",
+                    "sign":"KRW",
+                    "decimal":0,
+                    "useThousandsSep":true,
+                    "abbr":"NONE"
+                }
+            },
+            {
+                "name":"구매고객수",
+                "digits":2,
+                "type":"INTEGER",
+                "fieldFormat":{
+                    "type":"number",
+                    "sign":"KRW",
+                    "decimal":0,
+                    "useThousandsSep":true,
+                    "abbr":"NONE"
+                }
+            },
+            {
+                "name":"구매건당 단가",
+                "digits":2,
+                "fieldFormat":{
+                    "type":"number",
+                    "sign":"KRW",
+                    "decimal":0,
+                    "useThousandsSep":true,
+                    "abbr":"NONE"
+                }
+            },
+            {
+                "name":"구매수량당 단가",
+                "digits":2,
+                "fieldFormat":{
+                    "type":"number",
+                    "sign":"KRW",
+                    "decimal":0,
+                    "useThousandsSep":true,
+                    "abbr":"NONE"
+                }
+            }
+        ],
+        "axisSelectMode":"MULTI",
+        "onBodyCellClick":null,
+        "cellWidth":120,
+        "cellHeight":30,
+        "showAxisZ":false,
+        "customParams":{
+            "widgetId":"ca2a8378-9a9a-4c16-b125-810bd4f96a0f",
+            "externalFilters":false,
+            "selectFilterListList":[
+
+            ]
+        },
+        "min":0,
+        "max":6663400,
+        "header":{
+            "font":{
+                "size":13,
+                "styles":[
+
+                ],
+                "color":"#959595"
+            },
+            "align":{
+                "hAlign":"left",
+                "vAlign":"middle"
+            },
+            "showHeader":true,
+            "backgroundColor":"#ffffff"
+        },
+        "body":{
+            "font":{
+                "size":13,
+                "styles":[
+
+                ]
+            },
+            "color":{
+                "stepColors":[
+
+                ],
+                "stepTextColors":[
+
+                ],
+                "showColorStep":true,
+                "colorTarget":"TEXT"
+            },
+            "align":{
+                "hAlign":"left",
+                "vAlign":"middle"
+            },
+            "showAxisZ":true
+        },
+        "columnWidth":{
+            "발송수":120,
+            "CVR %":120,
+            "구매금액":120,
+            "발송당거래액":120,
+            "CTR %":120,
+            "구매건수":120,
+            "구매수량":120,
+            "클릭수":120,
+            "구매고객수":120,
+            "구매건당 단가":120,
+            "구매수량당 단가":120,
+            "일자":120,
+            "고유번호":120,
+            "브랜드명":120,
+            "세그먼트":120
+        },
+        "useSelectStyle":true,
+        "leftAxisWidth":120,
+        "showColorStep":false,
+        "dataColumnMode":"TOP",
+        "format":{
+            "isAll":true,
+            "each":null,
+            "type":"number",
+            "sign":"KRW",
+            "decimal":2,
+            "useThousandsSep":true
+        }
+    });
+}, false);
+
 document.querySelector("#button10").addEventListener("click", function (e) {
     pivotViewer.initialize(items8, {
         xProperties: [{"name": "Category"}],
@@ -1233,16 +1454,6 @@ document.querySelector("#sample1").addEventListener("click", function (e) {
         showColorStep: false,
         useSelectStyle: true
     });
-}, false);
-
-document.querySelector("#fontSize").addEventListener("change", function (e) {
-    pivotViewer.fontSize(document.querySelector("#fontSize option:checked").value);
-}, false);
-document.querySelector("#textAlign").addEventListener("change", function (e) {
-    pivotViewer.textAlign(document.querySelector("#textAlign option:checked").value);
-}, false);
-document.querySelector("#textAlignVertical").addEventListener("change", function (e) {
-    pivotViewer.textAlignVertical(document.querySelector("#textAlignVertical option:checked").value);
 }, false);
 
 window.onresize = function (event) {
