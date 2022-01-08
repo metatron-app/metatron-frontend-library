@@ -2559,7 +2559,7 @@ function viewer(zs) {
                                 // 20210330 : Harry : Leaf Frozen Column Width Setting - E
 
                                 let tempCellHeight = rowspan * this._settings.zProperties.length * cellHeight;
-                                let maxCellHeight = ( range.bottom - range.top ) * this._settings.zProperties.length  * cellHeight;
+                                let maxCellHeight = ( range.bottom - range.top ) * this._settings.zProperties.length  * cellHeight + cellHeight;
                                 columnStyles["height"] = ( ( tempCellHeight > maxCellHeight ) ? maxCellHeight : tempCellHeight ) + "px";
                                 // columnStyles["line-height"] = this.getLineHeightForValign( this._settings.header.align, tempCellHeight, rowspan ) + "px !important";
                                 columnStyles["z-index"] = range.bottom - yii; // 영역 클릭 이슈 해결 위해 추가
@@ -4064,7 +4064,7 @@ function viewer(zs) {
                         // 20210330 : Harry : Leaf Frozen Column Width Setting - E
 
                         let tempCellHeight = rowspan * cellHeight;
-                        let maxCellHeight = ( range.bottom - range.top ) * cellHeight;
+                        let maxCellHeight = ( range.bottom - range.top ) * cellHeight + cellHeight;
                         columnStyles["height"] = ( ( tempCellHeight > maxCellHeight ) ? maxCellHeight : tempCellHeight ) + "px";
                         // columnStyles["line-height"] = this.getLineHeightForValign( this._settings.header.align, tempCellHeight, rowspan ) + "px !important";
                         columnStyles["z-index"] = range.bottom - yii; // 영역 클릭 이슈 해결 위해 추가
