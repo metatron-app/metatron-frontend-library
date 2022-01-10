@@ -5524,33 +5524,39 @@ function viewer(zs) {
             let objLeafColumnWidth = this._leafColumnWidth;
             let objLeafFrozenColumnWidth = this._leafFrozenColumnWidth;
             let objLeafCalculatedColumnWidth = this._leafCalculatedColumnWidth;
-            let objLeafColumnWidthKeys = Object.keys(objLeafColumnWidth);
-            let objLeafFrozenColumnWidthKeys = Object.keys(objLeafFrozenColumnWidth);
-            let objLeafCalculatedColumnWidthKeys = Object.keys(objLeafCalculatedColumnWidth);
+
             let objItem = {};
-
-            if (objLeafColumnWidthKeys.length > 0) {
-                objLeafColumnWidthKeys.forEach(key => {
-                   if (key) {
-                       objItem[key] = objLeafColumnWidth[key];
-                   }
-                });
+            if( objLeafColumnWidth ) {
+                let objLeafColumnWidthKeys = Object.keys(objLeafColumnWidth);
+                if (objLeafColumnWidthKeys.length > 0) {
+                    objLeafColumnWidthKeys.forEach(key => {
+                       if (key) {
+                           objItem[key] = objLeafColumnWidth[key];
+                       }
+                    });
+                }
             }
 
-            if (objLeafFrozenColumnWidthKeys.length > 0) {
-                objLeafFrozenColumnWidthKeys.forEach(key => {
-                    if (key) {
-                        objItem[key] = objLeafFrozenColumnWidth[key];
-                    }
-                });
+            if( objLeafFrozenColumnWidth ) {
+                let objLeafFrozenColumnWidthKeys = Object.keys(objLeafFrozenColumnWidth);
+                if (objLeafFrozenColumnWidthKeys.length > 0) {
+                    objLeafFrozenColumnWidthKeys.forEach(key => {
+                        if (key) {
+                            objItem[key] = objLeafFrozenColumnWidth[key];
+                        }
+                    });
+                }
             }
 
-            if (objLeafCalculatedColumnWidthKeys.length > 0) {
-                objLeafCalculatedColumnWidthKeys.forEach(key => {
-                    if (key) {
-                        objItem[key] = objLeafCalculatedColumnWidth[key];
-                    }
-                });
+            if( objLeafCalculatedColumnWidth ) {
+                let objLeafCalculatedColumnWidthKeys = Object.keys(objLeafCalculatedColumnWidth);
+                if (objLeafCalculatedColumnWidthKeys.length > 0) {
+                    objLeafCalculatedColumnWidthKeys.forEach(key => {
+                        if (key) {
+                            objItem[key] = objLeafCalculatedColumnWidth[key];
+                        }
+                    });
+                }
             }
 
             return objItem;
